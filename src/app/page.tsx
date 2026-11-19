@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Printer, Briefcase, GraduationCap, Award, Phone, Mail, MapPin, Trash2, Plus, User, Languages, HeartHandshake, Link as LinkIcon, BookOpen, Wrench, CheckCircle, Globe, ShieldCheck, Code, ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  Printer, Briefcase, GraduationCap, Award, Phone, Mail, MapPin,
+  Trash2, Plus, User, Languages, HeartHandshake, Link as LinkIcon,
+  BookOpen, Wrench, CheckCircle, Globe, ShieldCheck, Code, ArrowRight,
+  Sparkles, RotateCcw, Download, Upload, FileText
+} from "lucide-react";
 
 interface LinkItem { label: string; url: string; }
 interface ToolItem { name: string; level: string; }
@@ -12,36 +17,297 @@ interface Experience { company: string; position: string; startDate: string; end
 interface Project { name: string; role: string; description: string; linkLabel?: string; linkUrl?: string; }
 interface Volunteer { organization: string; role: string; startDate: string; endDate: string; description: string; }
 
+interface ResumeFormData {
+  fullName: string;
+  email: string;
+  phone: string;
+  city: string;
+  links: LinkItem[];
+  profile: string;
+  softSkills: string;
+  toolsList: ToolItem[];
+  languageList: LanguageItem[];
+  education: Education[];
+  complementaryEdu: ComplementaryEdu[];
+  experiences: Experience[];
+  projects: Project[];
+  volunteers: Volunteer[];
+}
+
+const UNIMINUTO_PROGRAMS: { name: string; level: string }[] = [
+  { name: "Administración de Empresas", level: "Profesional" },
+  { name: "Administración en Seguridad y Salud en el Trabajo", level: "Profesional" },
+  { name: "Comunicación Social - Periodismo", level: "Profesional" },
+  { name: "Contaduría Pública", level: "Profesional" },
+  { name: "Ingeniería de Sistemas", level: "Profesional" },
+  { name: "Ingeniería Industrial", level: "Profesional" },
+  { name: "Licenciatura en Educación Física, Recreación y Deporte", level: "Profesional" },
+  { name: "Licenciatura en Educación Infantil", level: "Profesional" },
+  { name: "Licenciatura en Lenguas Extranjeras con Énfasis en Inglés", level: "Profesional" },
+  { name: "Psicología", level: "Profesional" },
+  { name: "Trabajo Social", level: "Profesional" },
+  { name: "Tecnología en Comunicación Gráfica", level: "Tecnólogo" },
+  { name: "Tecnología en Gestión de Mercadeo", level: "Tecnólogo" },
+  { name: "Tecnología en Gestión Financiera", level: "Tecnólogo" },
+  { name: "Tecnología en Logística", level: "Tecnólogo" },
+];
+
+const INITIAL_FORM_DATA: ResumeFormData = {
+  fullName: "",
+  email: "",
+  phone: "",
+  city: "Bogotá D.C.",
+  links: [],
+  profile: "",
+  softSkills: "",
+  toolsList: [],
+  languageList: [],
+  education: [
+    {
+      institution: "Corporación Universitaria Minuto de Dios - UNIMINUTO",
+      degree: "",
+      level: "Profesional",
+      year: "",
+      isCurrent: true,
+      semester: ""
+    }
+  ],
+  complementaryEdu: [],
+  experiences: [],
+  projects: [],
+  volunteers: []
+};
+
+const SAMPLE_FORM_DATA: ResumeFormData = {
+  fullName: "Laura Sofía Martínez Gómez",
+  email: "laura.martinez.go@uniminuto.edu.co",
+  phone: "310 456 7890",
+  city: "Bogotá D.C.",
+  links: [
+    { label: "LinkedIn", url: "linkedin.com/in/laura-martinez-uniminuto" },
+    { label: "Portafolio", url: "behance.net/lauramartinez" }
+  ],
+  profile:
+    "Estudiante de octavo semestre de Tecnología en Gestión de Mercadeo en UNIMINUTO Rectoría Bogotá, con experiencia previa de dos años en atención al cliente, apoyo comercial y gestión de contenidos digitales. Me caracterizo por mi orientación al logro, pensamiento analítico, trabajo colaborativo y capacidad de adaptación. Busco realizar mis prácticas profesionales aportando en investigación de mercados, estrategias de fidelización y análisis de campañas.",
+  softSkills: "Trabajo en equipo, Comunicación asertiva, Orientación al cliente, Organización, Pensamiento analítico",
+  toolsList: [
+    { name: "Microsoft Excel", level: "Avanzado" },
+    { name: "Canva", level: "Avanzado" },
+    { name: "Google Analytics", level: "Intermedio" }
+  ],
+  languageList: [
+    { language: "Inglés", level: "B1 - Intermedio" }
+  ],
+  education: [
+    {
+      institution: "Corporación Universitaria Minuto de Dios - UNIMINUTO",
+      degree: "Tecnología en Gestión de Mercadeo",
+      level: "Tecnólogo",
+      year: "Octavo Semestre",
+      isCurrent: true,
+      semester: "Octavo Semestre"
+    },
+    {
+      institution: "SENA - Servicio Nacional de Aprendizaje",
+      degree: "Técnico en Asistencia Administrativa",
+      level: "Técnico",
+      year: "2021",
+      isCurrent: false
+    }
+  ],
+  complementaryEdu: [
+    {
+      title: "Curso de Marketing Digital y Analítica Web",
+      institution: "UNIMINUTO - Educación Continua",
+      year: "2025"
+    }
+  ],
+  experiences: [
+    {
+      company: "Comercializadora Andina S.A.S.",
+      position: "Asesora Comercial y Servicio al Cliente",
+      startDate: "Ene 2023",
+      endDate: "Dic 2024",
+      description:
+        "Gestionar la atención personalizada y telefónica de más de 40 clientes diarios, logrando un índice de satisfacción superior al 92%.\nApoyar el seguimiento de cotizaciones, facturación básica y actualización de bases de datos comerciales en Excel.\nColaborar en la organización de exhibiciones promocionales en punto de venta para el lanzamiento de nuevas líneas."
+    }
+  ],
+  projects: [
+    {
+      name: "Plan Estratégico de Posicionamiento Digital para MiPymes Locales",
+      role: "Líder de Investigación de Mercados",
+      description:
+        "Diagnóstico de presencia digital y propuesta de plan de contenidos para emprendimientos de la localidad de Engativá en el marco de la asignatura de Investigación de Mercados.",
+      linkLabel: "Presentación",
+      linkUrl: "behance.net/lauramartinez"
+    }
+  ],
+  volunteers: [
+    {
+      organization: "Pastoral Social UNIMINUTO",
+      role: "Voluntaria de Apoyo Logístico y Comunitario",
+      startDate: "Ago 2024",
+      endDate: "Nov 2024",
+      description:
+        "Apoyar la logística de jornadas de recolección y entrega de kits escolares para niños en situación de vulnerabilidad."
+    }
+  ]
+};
+
+const STORAGE_KEY = "centro_progresa_hv_draft_v1";
+
 export default function Home() {
   const [started, setStarted] = useState(false);
+  const [formData, setFormData] = useState<ResumeFormData>(INITIAL_FORM_DATA);
+  const [customProgramMode, setCustomProgramMode] = useState(false);
+  const [estimatedPages, setEstimatedPages] = useState(1);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
-    fullName: "", email: "", phone: "", city: "Bogotá D.C.",
-    links: [] as LinkItem[],
-    profile: "", 
-    softSkills: "", 
-    toolsList: [] as ToolItem[],
-    languageList: [] as LanguageItem[],
-    education: [
-      { institution: "Corporación Universitaria Minuto de Dios - UNIMINUTO", degree: "", level: "Profesional", year: "", isCurrent: true, semester: "" }
-    ] as Education[],
-    complementaryEdu: [] as ComplementaryEdu[],
-    experiences: [] as Experience[],
-    projects: [] as Project[],
-    volunteers: [] as Volunteer[]
-  });
+  const resumeTableRef = useRef<HTMLTableElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Recuperar borrador temporal de sessionStorage (se borra al cerrar la pestaña)
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object" && Array.isArray(parsed.education)) {
+          setFormData(parsed);
+          const primaryDegree = parsed.education[0]?.degree || "";
+          if (primaryDegree && !UNIMINUTO_PROGRAMS.some((p) => p.name === primaryDegree)) {
+            setCustomProgramMode(true);
+          }
+        }
+      }
+    } catch {
+      // Ignorar errores de lectura de almacenamiento
+    }
+  }, []);
+
+  // Guardar borrador temporal en sessionStorage mientras la pestaña esté abierta
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    } catch {
+      // Ignorar errores de cuota
+    }
+  }, [formData]);
+
+  // Calcular extensión estimada en páginas Carta (aprox. 980px útiles por hoja)
+  useEffect(() => {
+    if (!started) return;
+    const timer = setTimeout(() => {
+      if (resumeTableRef.current) {
+        const height = resumeTableRef.current.offsetHeight;
+        const pages = Math.max(1, Math.ceil(height / 980));
+        setEstimatedPages(pages);
+      }
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [formData, started]);
+
+  const showToast = (msg: string) => {
+    setStatusMessage(msg);
+    setTimeout(() => setStatusMessage(null), 3500);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Cargar ejemplo guía
+  const handleLoadSample = () => {
+    setFormData(SAMPLE_FORM_DATA);
+    setCustomProgramMode(false);
+    showToast("Ejemplo institucional cargado. Puedes editarlo o limpiarlo cuando quieras.");
+  };
+
+  // Limpiar formulario
+  const handleResetForm = () => {
+    setFormData(INITIAL_FORM_DATA);
+    setCustomProgramMode(false);
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignorar
+    }
+    showToast("Formulario limpiado.");
+  };
+
+  // Exportar respaldo local (.json)
+  const handleExportJson = () => {
+    const dataStr = JSON.stringify(formData, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const safeName = (formData.fullName || "estudiante")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9áéíóúñ]+/gi, "_");
+    link.href = url;
+    link.download = `hv_uniminuto_${safeName}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast("Respaldo descargado en tu equipo.");
+  };
+
+  // Importar respaldo local (.json)
+  const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(String(event.target?.result || ""));
+        if (parsed && typeof parsed === "object" && Array.isArray(parsed.education)) {
+          setFormData({
+            ...INITIAL_FORM_DATA,
+            ...parsed
+          });
+          const primaryDegree = parsed.education[0]?.degree || "";
+          setCustomProgramMode(
+            Boolean(primaryDegree && !UNIMINUTO_PROGRAMS.some((p) => p.name === primaryDegree))
+          );
+          showToast("Respaldo cargado correctamente.");
+        } else {
+          showToast("El archivo seleccionado no tiene un formato válido.");
+        }
+      } catch {
+        showToast("No se pudo leer el archivo de respaldo.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  // Selección de programa principal UNIMINUTO
+  const handlePrimaryProgramSelect = (value: string) => {
+    if (value === "__OTHER__") {
+      setCustomProgramMode(true);
+      updateEducation(0, "degree", "");
+      return;
+    }
+    setCustomProgramMode(false);
+    const found = UNIMINUTO_PROGRAMS.find((p) => p.name === value);
+    const newEdu = [...formData.education];
+    newEdu[0] = {
+      ...newEdu[0],
+      degree: value,
+      level: found ? found.level : newEdu[0].level
+    };
+    setFormData({ ...formData, education: newEdu });
   };
 
   // Enlaces Profesionales (Sección 1)
   const addLink = () => {
     setFormData({ ...formData, links: [...formData.links, { label: "LinkedIn", url: "" }] });
   };
-  const updateLink = (index: number, field: string, value: string) => {
+  const updateLink = (index: number, field: keyof LinkItem, value: string) => {
     const list = [...formData.links];
-    (list[index] as any)[field] = value;
+    list[index] = { ...list[index], [field]: value };
     setFormData({ ...formData, links: list });
   };
   const removeLink = (index: number) => {
@@ -52,9 +318,9 @@ export default function Home() {
   const addTool = () => {
     setFormData({ ...formData, toolsList: [...formData.toolsList, { name: "", level: "Intermedio" }] });
   };
-  const updateTool = (index: number, field: string, value: string) => {
+  const updateTool = (index: number, field: keyof ToolItem, value: string) => {
     const list = [...formData.toolsList];
-    (list[index] as any)[field] = value;
+    list[index] = { ...list[index], [field]: value };
     setFormData({ ...formData, toolsList: list });
   };
   const removeTool = (index: number) => {
@@ -65,9 +331,9 @@ export default function Home() {
   const addLanguage = () => {
     setFormData({ ...formData, languageList: [...formData.languageList, { language: "", level: "B2 - Intermedio Alto" }] });
   };
-  const updateLanguage = (index: number, field: string, value: string) => {
+  const updateLanguage = (index: number, field: keyof LanguageItem, value: string) => {
     const list = [...formData.languageList];
-    (list[index] as any)[field] = value;
+    list[index] = { ...list[index], [field]: value };
     setFormData({ ...formData, languageList: list });
   };
   const removeLanguage = (index: number) => {
@@ -76,11 +342,17 @@ export default function Home() {
 
   // Formación Académica
   const addEducation = () => {
-    setFormData({ ...formData, education: [...formData.education, { institution: "", degree: "", level: "Profesional", year: "", isCurrent: false, semester: "" }] });
+    setFormData({
+      ...formData,
+      education: [
+        ...formData.education,
+        { institution: "", degree: "", level: "Técnico", year: "", isCurrent: false, semester: "" }
+      ]
+    });
   };
-  const updateEducation = (index: number, field: string, value: any) => {
+  const updateEducation = (index: number, field: keyof Education, value: string | boolean) => {
     const newEdu = [...formData.education];
-    (newEdu[index] as any)[field] = value;
+    newEdu[index] = { ...newEdu[index], [field]: value };
     setFormData({ ...formData, education: newEdu });
   };
   const removeEducation = (index: number) => {
@@ -91,9 +363,9 @@ export default function Home() {
   const addComplementary = () => {
     setFormData({ ...formData, complementaryEdu: [...formData.complementaryEdu, { title: "", institution: "", year: "" }] });
   };
-  const updateComplementary = (index: number, field: string, value: string) => {
+  const updateComplementary = (index: number, field: keyof ComplementaryEdu, value: string) => {
     const list = [...formData.complementaryEdu];
-    (list[index] as any)[field] = value;
+    list[index] = { ...list[index], [field]: value };
     setFormData({ ...formData, complementaryEdu: list });
   };
   const removeComplementary = (index: number) => {
@@ -102,11 +374,14 @@ export default function Home() {
 
   // Experiencia Laboral
   const addExperience = () => {
-    setFormData({ ...formData, experiences: [...formData.experiences, { company: "", position: "", startDate: "", endDate: "", description: "" }] });
+    setFormData({
+      ...formData,
+      experiences: [...formData.experiences, { company: "", position: "", startDate: "", endDate: "", description: "" }]
+    });
   };
-  const updateExperience = (index: number, field: string, value: string) => {
+  const updateExperience = (index: number, field: keyof Experience, value: string) => {
     const newExp = [...formData.experiences];
-    (newExp[index] as any)[field] = value;
+    newExp[index] = { ...newExp[index], [field]: value };
     setFormData({ ...formData, experiences: newExp });
   };
   const removeExperience = (index: number) => {
@@ -115,11 +390,14 @@ export default function Home() {
 
   // Proyectos Académicos
   const addProject = () => {
-    setFormData({ ...formData, projects: [...formData.projects, { name: "", role: "", description: "", linkLabel: "GitHub", linkUrl: "" }] });
+    setFormData({
+      ...formData,
+      projects: [...formData.projects, { name: "", role: "", description: "", linkLabel: "GitHub", linkUrl: "" }]
+    });
   };
-  const updateProject = (index: number, field: string, value: string) => {
+  const updateProject = (index: number, field: keyof Project, value: string) => {
     const list = [...formData.projects];
-    (list[index] as any)[field] = value;
+    list[index] = { ...list[index], [field]: value };
     setFormData({ ...formData, projects: list });
   };
   const removeProject = (index: number) => {
@@ -128,33 +406,44 @@ export default function Home() {
 
   // Voluntariado
   const addVolunteer = () => {
-    setFormData({ ...formData, volunteers: [...formData.volunteers, { organization: "", role: "", startDate: "", endDate: "", description: "" }] });
+    setFormData({
+      ...formData,
+      volunteers: [...formData.volunteers, { organization: "", role: "", startDate: "", endDate: "", description: "" }]
+    });
   };
-  const updateVolunteer = (index: number, field: string, value: string) => {
+  const updateVolunteer = (index: number, field: keyof Volunteer, value: string) => {
     const list = [...formData.volunteers];
-    (list[index] as any)[field] = value;
+    list[index] = { ...list[index], [field]: value };
     setFormData({ ...formData, volunteers: list });
   };
   const removeVolunteer = (index: number) => {
     setFormData({ ...formData, volunteers: formData.volunteers.filter((_, i) => i !== index) });
   };
 
-  // Componente auxiliar para renderizar títulos principales blindados contra huérfanos
+  // Limpia espacios dobles y puntos finales innecesarios en habilidades cortas
+  const parsedSoftSkills = formData.softSkills
+    .split(",")
+    .map((s) => s.replace(/\s+/g, " ").replace(/\.+$/, "").trim())
+    .filter(Boolean);
+
+  // Componente auxiliar para títulos principales blindados contra huérfanos
   const SectionHeading = ({ title }: { title: string }) => (
-    <div className="print-keep-with-next" style={{ margin: '18px 0 12px 0', textAlign: 'center' }}>
-      <div style={{ borderTop: '2px solid #fbbf24', height: '1px', width: '100%' }}></div>
-      <div style={{ marginTop: '-10px' }}>
-        <span style={{
-          backgroundColor: '#ffffff',
-          padding: '0 12px',
-          fontSize: '13px',
-          fontWeight: 800,
-          textTransform: 'uppercase',
-          color: '#020617',
-          letterSpacing: '0.05em',
-          lineHeight: '16px',
-          display: 'inline-block'
-        }}>
+    <div className="print-keep-with-next" style={{ margin: "18px 0 12px 0", textAlign: "center" }}>
+      <div style={{ borderTop: "2px solid #fbbf24", height: "1px", width: "100%" }}></div>
+      <div style={{ marginTop: "-10px" }}>
+        <span
+          style={{
+            backgroundColor: "#ffffff",
+            padding: "0 12px",
+            fontSize: "13px",
+            fontWeight: 800,
+            textTransform: "uppercase",
+            color: "#020617",
+            letterSpacing: "0.05em",
+            lineHeight: "16px",
+            display: "inline-block"
+          }}
+        >
           {title}
         </span>
       </div>
@@ -164,12 +453,7 @@ export default function Home() {
   // PANTALLA INICIAL / LANDING PAGE
   if (!started) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 flex flex-col font-sans text-slate-100" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-        <style jsx global>{`
-          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
-          body, input, select, textarea, button { font-family: 'Montserrat', sans-serif !important; }
-        `}</style>
-
+      <div className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 flex flex-col text-slate-100">
         {/* Cabecera institucional superior */}
         <header className="bg-blue-950/80 backdrop-blur-md text-white px-6 py-4 flex justify-between items-center border-b border-blue-800/60 shadow-xl">
           <div className="flex items-center gap-4">
@@ -189,44 +473,41 @@ export default function Home() {
 
         {/* Contenido principal de bienvenida */}
         <main className="flex-1 max-w-5xl w-full mx-auto p-6 lg:p-12 flex flex-col justify-center space-y-8">
-          
           <div className="text-center space-y-4">
             <h2 className="text-3xl lg:text-5xl font-black tracking-tight text-white leading-tight">
               Creador de Hoja de Vida <span className="text-amber-400">Profesional</span>
             </h2>
             <p className="text-slate-300 text-sm lg:text-base max-w-2xl mx-auto leading-relaxed">
-              Diseñado especialmente para estudiantes de UNIMINUTO Rectoría Bogotá que buscan postularse a sus prácticas profesionales.
+              Diseñado especialmente para estudiantes de pregrado de UNIMINUTO Rectoría Bogotá que buscan postularse a sus prácticas profesionales.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
             <div className="bg-blue-900/40 backdrop-blur-md border border-blue-700/60 rounded-2xl p-6 space-y-3 shadow-lg">
               <div className="w-10 h-10 rounded-xl bg-amber-400/20 flex items-center justify-center text-amber-400 font-bold">
-                <BookOpen size={20}/>
+                <BookOpen size={20} />
               </div>
               <h3 className="text-lg font-bold text-white">1. ¿Cómo funciona?</h3>
               <p className="text-slate-300 text-xs leading-relaxed">
-                Es muy sencillo. Solo debes completar el formulario con tu información personal, formación académica institucional, perfil y experiencia. Al mismo tiempo, podrás ver una <strong>vista previa en tiempo real</strong> de cómo va quedando tu hoja de vida y guardarla en PDF o imprimirla desde tu navegador.
+                Es muy sencillo. Solo debes completar el formulario con tu información personal, formación académica institucional, perfil y experiencia. Podrás ver una <strong>vista previa en tiempo real</strong>, descargar un respaldo editable en tu computador y guardar tu hoja de vida en PDF desde tu navegador.
               </p>
             </div>
 
             <div className="bg-blue-900/40 backdrop-blur-md border border-blue-700/60 rounded-2xl p-6 space-y-3 shadow-lg">
               <div className="w-10 h-10 rounded-xl bg-emerald-400/20 flex items-center justify-center text-emerald-400 font-bold">
-                <ShieldCheck size={20}/>
+                <ShieldCheck size={20} />
               </div>
               <h3 className="text-lg font-bold text-white">2. Privacidad y Protección de Datos</h3>
               <p className="text-slate-300 text-xs leading-relaxed">
                 De conformidad con la <strong className="text-white">Ley estatutaria 1581 de 2012</strong> de protección de datos personales en Colombia (Habeas Data), te informamos que <strong className="text-amber-400">ninguna información personal es almacenada ni enviada a servidores externos</strong>. Todo el proceso ocurre de forma 100% local en tu navegador web. <strong className="text-white">En cuanto cierres la pestaña o el navegador, todos los datos ingresados se borran automáticamente de la memoria</strong>, garantizando absoluta seguridad y confidencialidad con tu información.
               </p>
             </div>
-
           </div>
 
           <div className="flex justify-center pt-4">
             <button
               onClick={() => setStarted(true)}
-              className="bg-amber-400 hover:bg-amber-300 text-blue-950 font-extrabold text-sm lg:text-base px-8 py-4 rounded-2xl shadow-xl shadow-amber-500/20 flex items-center gap-3 transition transform hover:-translate-y-0.5 active:scale-95"
+              className="bg-amber-400 hover:bg-amber-300 text-blue-950 font-extrabold text-sm lg:text-base px-8 py-4 rounded-2xl shadow-xl shadow-amber-500/20 flex items-center gap-3 transition transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
             >
               Comenzar a Crear mi Hoja de Vida <ArrowRight size={20} />
             </button>
@@ -234,7 +515,7 @@ export default function Home() {
 
           <div className="border-t border-blue-800/80 pt-6 mt-8 text-center space-y-3">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
-              <Code size={14} className="text-amber-400"/> Reconocimientos y Código Abierto
+              <Code size={14} className="text-amber-400" /> Reconocimientos y Código Abierto
             </p>
             <div className="flex flex-wrap justify-center items-center gap-4 text-xs text-slate-300">
               <a
@@ -261,7 +542,6 @@ export default function Home() {
               </span>
             </div>
           </div>
-
         </main>
       </div>
     );
@@ -269,14 +549,8 @@ export default function Home() {
 
   // APLICACIÓN / FORMULARIO PRINCIPAL
   return (
-    <div className="min-h-screen bg-blue-950 flex flex-col font-sans text-slate-100 print:bg-white print:min-h-0" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+    <div className="min-h-screen bg-blue-950 flex flex-col text-slate-100 print:bg-white print:min-h-0">
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
-
-        body, input, select, textarea, button {
-          font-family: 'Montserrat', sans-serif !important;
-        }
-
         @media print, screen {
           .print-atomic-item {
             break-inside: avoid;
@@ -300,7 +574,6 @@ export default function Home() {
           body {
             background: white !important;
             -webkit-print-color-adjust: exact;
-            font-family: 'Montserrat', sans-serif !important;
           }
           header, .print\\:hidden {
             display: none !important;
@@ -311,42 +584,67 @@ export default function Home() {
             width: 100% !important;
             max-width: none !important;
             border: none !important;
-            font-family: 'Montserrat', sans-serif !important;
           }
         }
       `}</style>
 
+      {/* Notificación flotante */}
+      {statusMessage && (
+        <div className="fixed bottom-5 right-5 z-50 bg-blue-900 border border-amber-400 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl print:hidden">
+          {statusMessage}
+        </div>
+      )}
+
       {/* Barra superior institucional */}
-      <header className="bg-blue-900 text-white px-6 py-4 print:hidden flex justify-between items-center border-b border-blue-800 shadow-xl">
-        <div className="flex items-center gap-4">
-          <button 
+      <header className="bg-blue-900 text-white px-4 lg:px-6 py-3.5 print:hidden flex flex-wrap justify-between items-center gap-3 border-b border-blue-800 shadow-xl">
+        <div className="flex items-center gap-3 lg:gap-4">
+          <button
             onClick={() => setStarted(false)}
-            className="text-xs text-blue-200 hover:text-white bg-blue-800/60 hover:bg-blue-800 px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1"
+            className="text-xs text-blue-200 hover:text-white bg-blue-800/60 hover:bg-blue-800 px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 cursor-pointer"
             title="Volver a la página de bienvenida"
           >
-            ← Volver al inicio
+            ← Inicio
           </button>
-          <div className="h-4 w-px bg-blue-700"></div>
-          <div className="flex items-center gap-3">
+          <div className="h-4 w-px bg-blue-700 hidden sm:block"></div>
+          <div className="hidden sm:flex items-center gap-3">
             <img src="/bogota-blanco.svg" alt="Rectoría Bogotá" className="h-6 object-contain" />
             <div className="h-4 w-px bg-blue-700"></div>
             <img src="/progresa-blanco.svg" alt="Centro Progresa" className="h-6 object-contain" />
           </div>
           <div>
-            <h1 className="text-sm font-bold tracking-tight text-white">
+            <h1 className="text-xs lg:text-sm font-bold tracking-tight text-white">
               Creador de Hoja de Vida Institucional
             </h1>
-            <p className="text-xs text-blue-200">Centro Progresa E.P.E. • Prácticas Profesionales</p>
+            <p className="text-[11px] text-blue-200">Centro Progresa E.P.E. • Prácticas Profesionales</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="hidden xl:inline text-[11px] text-amber-300 font-medium">
-            En Destino, elige <strong>Guardar como PDF</strong> para conservar los enlaces
-          </span>
-          <button 
-            onClick={() => window.print()} 
-            className="bg-amber-400 hover:bg-amber-300 text-blue-950 text-xs font-black px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-amber-500/20 transition transform active:scale-95 cursor-pointer"
-            title="Abrir ventana de impresión del navegador (elige Guardar como PDF)"
+
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            onChange={handleImportJson}
+            className="hidden"
+          />
+          <button
+            onClick={handleExportJson}
+            className="bg-blue-950/80 hover:bg-blue-800 text-blue-100 border border-blue-700 text-[11px] font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
+            title="Descargar archivo de respaldo (.json) para continuar después"
+          >
+            <Download size={14} className="text-amber-400" /> Guardar Avance
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="bg-blue-950/80 hover:bg-blue-800 text-blue-100 border border-blue-700 text-[11px] font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
+            title="Cargar un archivo de respaldo (.json) guardado previamente"
+          >
+            <Upload size={14} className="text-amber-400" /> Cargar Avance
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="bg-amber-400 hover:bg-amber-300 text-blue-950 text-xs font-black px-4 lg:px-5 py-2 rounded-xl flex items-center gap-2 shadow-lg shadow-amber-500/20 transition transform active:scale-95 cursor-pointer"
+            title="En Destino, elige Guardar como PDF para conservar los enlaces"
           >
             <Printer size={16} /> Imprimir / Guardar PDF
           </button>
@@ -357,80 +655,102 @@ export default function Home() {
       <div className="flex-1 max-w-[1800px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start print:block print:p-0 print:m-0 print:w-full print:max-w-none">
         
         {/* PANEL IZQUIERDO: Formulario */}
-        <div className="lg:col-span-5 bg-blue-900/90 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-800/80 overflow-hidden print:hidden flex flex-col max-h-[88vh] overflow-y-auto p-6 space-y-6">
+        <div className="lg:col-span-5 bg-blue-900/90 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-800/80 overflow-hidden print:hidden flex flex-col max-h-[88vh] overflow-y-auto p-5 lg:p-6 space-y-5">
           
+          {/* Barra de ayuda rápida: Cargar ejemplo o limpiar */}
+          <div className="bg-blue-950/90 border border-blue-800 rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[11px] text-blue-200 font-medium">
+              ¿No sabes cómo empezar?
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleLoadSample}
+                className="text-[11px] bg-blue-800 hover:bg-blue-700 text-amber-300 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <Sparkles size={13} /> Cargar Ejemplo
+              </button>
+              <button
+                onClick={handleResetForm}
+                className="text-[11px] bg-blue-900 hover:bg-rose-950/70 text-slate-300 hover:text-rose-200 border border-blue-800 font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition cursor-pointer"
+                title="Borrar todos los campos"
+              >
+                <RotateCcw size={12} /> Limpiar
+              </button>
+            </div>
+          </div>
+
           {/* SECCIÓN 1: INFORMACIÓN PERSONAL */}
           <div className="bg-blue-950/80 border border-blue-800 rounded-xl p-5 space-y-4 shadow-sm">
             <h2 className="text-xs font-extrabold uppercase tracking-widest text-amber-400 flex items-center gap-2 border-b border-blue-900 pb-2">
-              <User size={15}/> 1. Información Personal
+              <User size={15} /> 1. Información Personal
             </h2>
             <div>
               <label className="block text-[11px] font-semibold text-blue-200 mb-1">Nombre Completo</label>
-              <input 
-                type="text" 
-                name="fullName" 
+              <input
+                type="text"
+                name="fullName"
                 lang="es-CO"
                 spellCheck={true}
-                placeholder="Ej. Laura Sofía Martínez" 
-                value={formData.fullName} 
-                onChange={handleInputChange} 
-                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400 transition" 
+                placeholder="Ej. Laura Sofía Martínez Gómez"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400 transition"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-blue-200 mb-1">Correo Electrónico</label>
-                <input 
-                  type="email" 
-                  name="email" 
+                <input
+                  type="email"
+                  name="email"
                   lang="es-CO"
                   spellCheck={false}
-                  placeholder="correo@uniminuto.edu.co" 
-                  value={formData.email} 
-                  onChange={handleInputChange} 
-                  className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400" 
+                  placeholder="correo@uniminuto.edu.co"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
                 />
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-blue-200 mb-1">Celular</label>
-                <input 
-                  type="text" 
-                  name="phone" 
+                <input
+                  type="text"
+                  name="phone"
                   lang="es-CO"
                   spellCheck={false}
-                  placeholder="300 123 4567" 
-                  value={formData.phone} 
-                  onChange={handleInputChange} 
-                  className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400" 
+                  placeholder="300 123 4567"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
                 />
               </div>
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-blue-200 mb-1">Ciudad</label>
-              <input 
-                type="text" 
-                name="city" 
+              <input
+                type="text"
+                name="city"
                 lang="es-CO"
                 spellCheck={true}
-                value={formData.city} 
-                onChange={handleInputChange} 
-                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400" 
+                value={formData.city}
+                onChange={handleInputChange}
+                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
               />
             </div>
 
             {/* Enlaces / Portafolios */}
             <div className="space-y-3 pt-2 border-t border-blue-900/60">
-              <span className="text-[11px] font-bold text-blue-200 flex items-center gap-1"><LinkIcon size={13}/> Enlaces y Portafolios</span>
+              <span className="text-[11px] font-bold text-blue-200 flex items-center gap-1"><LinkIcon size={13} /> Enlaces y Portafolios</span>
               {formData.links.map((link, idx) => (
                 <div key={idx} className="flex gap-2 items-center bg-blue-900/40 p-2.5 rounded-lg border border-blue-800">
                   <input type="text" lang="es-CO" spellCheck={true} placeholder="Red (Ej. LinkedIn)" value={link.label} onChange={(e) => updateLink(idx, "label", e.target.value)} className="w-1/3 p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   <input type="text" lang="es-CO" spellCheck={false} placeholder="URL (linkedin.com/in/...)" value={link.url} onChange={(e) => updateLink(idx, "url", e.target.value)} className="flex-1 p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
-                  <button onClick={() => removeLink(idx)} className="text-rose-300 hover:text-rose-100 p-1"><Trash2 size={14}/></button>
+                  <button onClick={() => removeLink(idx)} className="text-rose-300 hover:text-rose-100 p-1 cursor-pointer"><Trash2 size={14} /></button>
                 </div>
               ))}
               <div className="flex justify-end pt-1">
-                <button onClick={addLink} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition">
-                  <Plus size={13}/> Añadir Enlace
+                <button onClick={addLink} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition cursor-pointer">
+                  <Plus size={13} /> Añadir Enlace
                 </button>
               </div>
             </div>
@@ -439,60 +759,63 @@ export default function Home() {
           {/* SECCIÓN 2: PERFIL PROFESIONAL */}
           <div className="bg-blue-950/80 border border-blue-800 rounded-xl p-5 space-y-4 shadow-sm">
             <h2 className="text-xs font-extrabold uppercase tracking-widest text-amber-400 flex items-center gap-2 border-b border-blue-900 pb-2">
-              <Award size={15}/> 2. Perfil Profesional
+              <Award size={15} /> 2. Perfil Profesional
             </h2>
             <div>
-              <label className="block text-[11px] font-semibold text-blue-200 mb-1">Perfil Ocupacional</label>
-              <textarea 
-                name="profile" 
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-[11px] font-semibold text-blue-200">Perfil Ocupacional</label>
+                <span className="text-[10px] text-blue-300">{formData.profile.length} caracteres</span>
+              </div>
+              <textarea
+                name="profile"
                 lang="es-CO"
                 spellCheck={true}
-                rows={3} 
-                placeholder="Estudiante apasionado..." 
-                value={formData.profile} 
-                onChange={handleInputChange} 
-                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400 resize-none"
+                rows={4}
+                placeholder="Describe tu programa académico, fortalezas principales y el área en la que deseas aportar durante tus prácticas..."
+                value={formData.profile}
+                onChange={handleInputChange}
+                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400 resize-y"
               ></textarea>
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-blue-200 mb-1">Habilidades (separadas por comas)</label>
-              <input 
-                type="text" 
-                name="softSkills" 
+              <input
+                type="text"
+                name="softSkills"
                 lang="es-CO"
                 spellCheck={true}
-                placeholder="Ej. Trabajo en equipo, Adaptabilidad, Liderazgo" 
-                value={formData.softSkills} 
-                onChange={handleInputChange} 
-                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400" 
+                placeholder="Ej. Trabajo en equipo, Adaptabilidad, Liderazgo"
+                value={formData.softSkills}
+                onChange={handleInputChange}
+                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
               />
             </div>
 
             {/* Herramientas */}
             <div className="space-y-3 pt-2 border-t border-blue-900/60">
-              <span className="text-[11px] font-bold text-blue-200 flex items-center gap-1"><Wrench size={13}/> Herramientas (Software / Apps)</span>
+              <span className="text-[11px] font-bold text-blue-200 flex items-center gap-1"><Wrench size={13} /> Herramientas (Software / Apps)</span>
               {formData.toolsList.map((tool, idx) => (
                 <div key={idx} className="flex gap-2 items-center bg-blue-900/40 p-2.5 rounded-lg border border-blue-800">
-                  <input type="text" lang="es-CO" spellCheck={true} placeholder="Ej. Python, Excel" value={tool.name} onChange={(e) => updateTool(idx, "name", e.target.value)} className="flex-1 p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                  <input type="text" lang="es-CO" spellCheck={true} placeholder="Ej. Microsoft Excel, Canva" value={tool.name} onChange={(e) => updateTool(idx, "name", e.target.value)} className="flex-1 p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   <select value={tool.level} onChange={(e) => updateTool(idx, "level", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white">
                     <option value="Básico">Básico</option>
                     <option value="Intermedio">Intermedio</option>
                     <option value="Avanzado">Avanzado</option>
                     <option value="Experto">Experto</option>
                   </select>
-                  <button onClick={() => removeTool(idx)} className="text-rose-300 hover:text-rose-100 p-1"><Trash2 size={14}/></button>
+                  <button onClick={() => removeTool(idx)} className="text-rose-300 hover:text-rose-100 p-1 cursor-pointer"><Trash2 size={14} /></button>
                 </div>
               ))}
               <div className="flex justify-end pt-1">
-                <button onClick={addTool} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition">
-                  <Plus size={13}/> Añadir Herramienta
+                <button onClick={addTool} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition cursor-pointer">
+                  <Plus size={13} /> Añadir Herramienta
                 </button>
               </div>
             </div>
 
             {/* Idiomas */}
             <div className="space-y-3 pt-2 border-t border-blue-900/60">
-              <span className="text-[11px] font-bold text-blue-200 flex items-center gap-1"><Languages size={13}/> Idiomas</span>
+              <span className="text-[11px] font-bold text-blue-200 flex items-center gap-1"><Languages size={13} /> Idiomas</span>
               {formData.languageList.map((lang, idx) => (
                 <div key={idx} className="flex gap-2 items-center bg-blue-900/40 p-2.5 rounded-lg border border-blue-800">
                   <input type="text" lang="es-CO" spellCheck={true} placeholder="Ej. Inglés, Francés" value={lang.language} onChange={(e) => updateLanguage(idx, "language", e.target.value)} className="flex-1 p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
@@ -504,12 +827,12 @@ export default function Home() {
                     <option value="C1 - Avanzado">C1 - Avanzado</option>
                     <option value="C2 - Maestría / Nativo">C2 - Maestría / Nativo</option>
                   </select>
-                  <button onClick={() => removeLanguage(idx)} className="text-rose-300 hover:text-rose-100 p-1"><Trash2 size={14}/></button>
+                  <button onClick={() => removeLanguage(idx)} className="text-rose-300 hover:text-rose-100 p-1 cursor-pointer"><Trash2 size={14} /></button>
                 </div>
               ))}
               <div className="flex justify-end pt-1">
-                <button onClick={addLanguage} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition">
-                  <Plus size={13}/> Añadir Idioma
+                <button onClick={addLanguage} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition cursor-pointer">
+                  <Plus size={13} /> Añadir Idioma
                 </button>
               </div>
             </div>
@@ -519,7 +842,7 @@ export default function Home() {
           <div className="bg-blue-950/80 border border-blue-800 rounded-xl p-5 space-y-4 shadow-sm">
             <div className="flex justify-between items-center border-b border-blue-900 pb-2">
               <h2 className="text-xs font-extrabold uppercase tracking-widest text-amber-400 flex items-center gap-2">
-                <GraduationCap size={15}/> 3. Formación
+                <GraduationCap size={15} /> 3. Formación
               </h2>
             </div>
 
@@ -529,43 +852,90 @@ export default function Home() {
               {formData.education.map((edu, idx) => (
                 <div key={idx} className="p-3 border border-blue-800 rounded-xl bg-blue-900/50 space-y-2 relative">
                   {idx > 0 && (
-                    <button onClick={() => removeEducation(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100"><Trash2 size={14}/></button>
+                    <button onClick={() => removeEducation(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100 cursor-pointer"><Trash2 size={14} /></button>
                   )}
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-amber-300">{idx === 0 ? "★ Formación Principal (UNIMINUTO)" : `Estudio #${idx + 1}`}</span>
+                    <span className="text-[10px] font-bold text-amber-300">{idx === 0 ? "★ Pregrado Principal (UNIMINUTO)" : `Estudio #${idx + 1}`}</span>
                     <label className="flex items-center gap-1 text-[10px] text-blue-200 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={edu.isCurrent || false} 
-                        onChange={(e) => updateEducation(idx, "isCurrent", e.target.checked)} 
-                        className="rounded bg-blue-950 border-blue-700" 
+                      <input
+                        type="checkbox"
+                        checked={edu.isCurrent || false}
+                        onChange={(e) => updateEducation(idx, "isCurrent", e.target.checked)}
+                        className="rounded bg-blue-950 border-blue-700"
                       /> En curso
                     </label>
                   </div>
+
                   {idx === 0 ? (
-                    <input type="text" disabled value="Corporación Universitaria Minuto de Dios - UNIMINUTO" className="w-full p-2 text-[12px] bg-blue-950/60 border border-blue-800/60 rounded text-blue-300 cursor-not-allowed" />
+                    <>
+                      <input type="text" disabled value="Corporación Universitaria Minuto de Dios - UNIMINUTO" className="w-full p-2 text-[12px] bg-blue-950/60 border border-blue-800/60 rounded text-blue-300 cursor-not-allowed" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <select
+                          value={customProgramMode ? "__OTHER__" : edu.degree}
+                          onChange={(e) => handlePrimaryProgramSelect(e.target.value)}
+                          className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white"
+                        >
+                          <option value="">Selecciona tu programa...</option>
+                          {UNIMINUTO_PROGRAMS.map((prog) => (
+                            <option key={prog.name} value={prog.name}>
+                              {prog.name}
+                            </option>
+                          ))}
+                          <option value="__OTHER__">Otro programa (escribir manualmente)</option>
+                        </select>
+                        <select
+                          value={edu.level}
+                          onChange={(e) => updateEducation(idx, "level", e.target.value)}
+                          className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white"
+                        >
+                          <option value="Técnico">Técnico</option>
+                          <option value="Tecnólogo">Tecnólogo</option>
+                          <option value="Profesional">Profesional</option>
+                        </select>
+                      </div>
+                      {customProgramMode && (
+                        <input
+                          type="text"
+                          lang="es-CO"
+                          spellCheck={true}
+                          placeholder="Escribe el nombre oficial de tu programa de pregrado"
+                          value={edu.degree}
+                          onChange={(e) => updateEducation(idx, "degree", e.target.value)}
+                          className="w-full p-2 text-[12px] bg-blue-950 border border-amber-400/60 rounded text-white"
+                        />
+                      )}
+                    </>
                   ) : (
-                    <input type="text" lang="es-CO" spellCheck={true} placeholder="Institución" value={edu.institution} onChange={(e) => updateEducation(idx, "institution", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                    <>
+                      <input type="text" lang="es-CO" spellCheck={true} placeholder="Institución (Ej. SENA, Colegio...)" value={edu.institution} onChange={(e) => updateEducation(idx, "institution", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input type="text" lang="es-CO" spellCheck={true} placeholder="Título obtenido" value={edu.degree} onChange={(e) => updateEducation(idx, "degree", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                        <select value={edu.level} onChange={(e) => updateEducation(idx, "level", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white">
+                          <option value="Bachiller">Bachiller</option>
+                          <option value="Técnico">Técnico</option>
+                          <option value="Tecnólogo">Tecnólogo</option>
+                          <option value="Profesional">Profesional</option>
+                        </select>
+                      </div>
+                    </>
                   )}
+
                   <div className="grid grid-cols-2 gap-2">
-                    <input type="text" lang="es-CO" spellCheck={true} placeholder="Título a obtener / Programa" value={edu.degree} onChange={(e) => updateEducation(idx, "degree", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
-                    <select value={edu.level} onChange={(e) => updateEducation(idx, "level", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white">
-                      <option value="Bachiller">Bachiller</option>
-                      <option value="Técnico">Técnico</option>
-                      <option value="Tecnólogo">Tecnólogo</option>
-                      <option value="Profesional">Profesional</option>
-                      <option value="Especialización">Especialización</option>
-                      <option value="Maestría">Maestría</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="text" lang="es-CO" spellCheck={false} placeholder={edu.isCurrent ? "Ej. Octavo Semestre" : "Año de grado (Ej. 2024)"} value={edu.year} onChange={(e) => updateEducation(idx, "year", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                    <input
+                      type="text"
+                      lang="es-CO"
+                      spellCheck={false}
+                      placeholder={edu.isCurrent ? "Ej. Octavo Semestre" : "Año de grado (Ej. 2024)"}
+                      value={edu.year}
+                      onChange={(e) => updateEducation(idx, "year", e.target.value)}
+                      className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white"
+                    />
                   </div>
                 </div>
               ))}
               <div className="flex justify-end pt-1">
-                <button onClick={addEducation} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition">
-                  <Plus size={13}/> Añadir Título
+                <button onClick={addEducation} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition cursor-pointer">
+                  <Plus size={13} /> Añadir Título
                 </button>
               </div>
             </div>
@@ -575,7 +945,7 @@ export default function Home() {
               <span className="text-[11px] font-bold text-blue-200">Formación Complementaria</span>
               {formData.complementaryEdu.map((comp, idx) => (
                 <div key={idx} className="p-3 border border-blue-800 rounded-xl bg-blue-900/50 space-y-2 relative">
-                  <button onClick={() => removeComplementary(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100"><Trash2 size={14}/></button>
+                  <button onClick={() => removeComplementary(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100 cursor-pointer"><Trash2 size={14} /></button>
                   <input type="text" lang="es-CO" spellCheck={true} placeholder="Nombre del Curso o Taller" value={comp.title} onChange={(e) => updateComplementary(idx, "title", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   <div className="grid grid-cols-2 gap-2">
                     <input type="text" lang="es-CO" spellCheck={true} placeholder="Institución / Plataforma" value={comp.institution} onChange={(e) => updateComplementary(idx, "institution", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
@@ -584,8 +954,8 @@ export default function Home() {
                 </div>
               ))}
               <div className="flex justify-end pt-1">
-                <button onClick={addComplementary} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition">
-                  <Plus size={13}/> Añadir Curso / Taller
+                <button onClick={addComplementary} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition cursor-pointer">
+                  <Plus size={13} /> Añadir Curso / Taller
                 </button>
               </div>
             </div>
@@ -594,7 +964,7 @@ export default function Home() {
           {/* SECCIÓN 4: EXPERIENCIA PROFESIONAL */}
           <div className="bg-blue-950/80 border border-blue-800 rounded-xl p-5 space-y-4 shadow-sm">
             <h2 className="text-xs font-extrabold uppercase tracking-widest text-amber-400 flex items-center gap-2 border-b border-blue-900 pb-2">
-              <Briefcase size={15}/> 4. Experiencia Profesional
+              <Briefcase size={15} /> 4. Experiencia Profesional
             </h2>
 
             {/* Laboral */}
@@ -602,29 +972,29 @@ export default function Home() {
               <span className="text-[11px] font-bold text-blue-200">Experiencia Laboral</span>
               {formData.experiences.map((exp, idx) => (
                 <div key={idx} className="p-3 border border-blue-800 rounded-xl bg-blue-900/50 space-y-2 relative">
-                  <button onClick={() => removeExperience(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100"><Trash2 size={14}/></button>
+                  <button onClick={() => removeExperience(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100 cursor-pointer"><Trash2 size={14} /></button>
                   <input type="text" lang="es-CO" spellCheck={true} placeholder="Empresa" value={exp.company} onChange={(e) => updateExperience(idx, "company", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   <input type="text" lang="es-CO" spellCheck={true} placeholder="Cargo" value={exp.position} onChange={(e) => updateExperience(idx, "position", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   <div className="grid grid-cols-2 gap-2">
-                    <input type="text" lang="es-CO" spellCheck={false} placeholder="Inicio" value={exp.startDate} onChange={(e) => updateExperience(idx, "startDate", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
-                    <input type="text" lang="es-CO" spellCheck={false} placeholder="Fin (Actual)" value={exp.endDate} onChange={(e) => updateExperience(idx, "endDate", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                    <input type="text" lang="es-CO" spellCheck={false} placeholder="Inicio (Ej. Ene 2024)" value={exp.startDate} onChange={(e) => updateExperience(idx, "startDate", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                    <input type="text" lang="es-CO" spellCheck={false} placeholder="Fin (Ej. Actual)" value={exp.endDate} onChange={(e) => updateExperience(idx, "endDate", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   </div>
-                  <textarea lang="es-CO" spellCheck={true} placeholder="Funciones (cada línea será un punto numerado)..." rows={4} value={exp.description} onChange={(e) => updateExperience(idx, "description", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded text-white resize-y"></textarea>
+                  <textarea lang="es-CO" spellCheck={true} placeholder="Funciones (cada línea será un punto numerado; inicia con verbos en infinitivo: Gestionar, Apoyar...)" rows={4} value={exp.description} onChange={(e) => updateExperience(idx, "description", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded text-white resize-y"></textarea>
                 </div>
               ))}
               <div className="flex justify-end pt-1">
-                <button onClick={addExperience} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition">
-                  <Plus size={13}/> Añadir Experiencia
+                <button onClick={addExperience} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition cursor-pointer">
+                  <Plus size={13} /> Añadir Experiencia
                 </button>
               </div>
             </div>
 
-            {/* Proyectos con Plataforma + Link y múltiples párrafos */}
+            {/* Proyectos */}
             <div className="space-y-3 pt-3 border-t border-blue-900/60">
               <span className="text-[11px] font-bold text-blue-200">Proyectos Académicos</span>
               {formData.projects.map((proj, idx) => (
                 <div key={idx} className="p-3 border border-blue-800 rounded-xl bg-blue-900/50 space-y-2 relative">
-                  <button onClick={() => removeProject(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100"><Trash2 size={14}/></button>
+                  <button onClick={() => removeProject(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100 cursor-pointer"><Trash2 size={14} /></button>
                   <input type="text" lang="es-CO" spellCheck={true} placeholder="Nombre del Proyecto" value={proj.name} onChange={(e) => updateProject(idx, "name", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   <input type="text" lang="es-CO" spellCheck={true} placeholder="Rol / Participación" value={proj.role} onChange={(e) => updateProject(idx, "role", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   <div className="flex gap-2 items-center bg-blue-950/60 p-2 rounded-lg border border-blue-800/80">
@@ -651,8 +1021,8 @@ export default function Home() {
                 </div>
               ))}
               <div className="flex justify-end pt-1">
-                <button onClick={addProject} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition">
-                  <Plus size={13}/> Añadir Proyecto
+                <button onClick={addProject} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition cursor-pointer">
+                  <Plus size={13} /> Añadir Proyecto
                 </button>
               </div>
             </div>
@@ -662,24 +1032,24 @@ export default function Home() {
           <div className="bg-blue-950/80 border border-blue-800 rounded-xl p-5 space-y-4 shadow-sm">
             <div className="flex justify-between items-center border-b border-blue-900 pb-2">
               <h2 className="text-xs font-extrabold uppercase tracking-widest text-amber-400 flex items-center gap-2">
-                <HeartHandshake size={15}/> 5. Voluntariado
+                <HeartHandshake size={15} /> 5. Voluntariado
               </h2>
             </div>
             {formData.volunteers.map((vol, idx) => (
               <div key={idx} className="p-3.5 border border-blue-800 rounded-xl bg-blue-900/50 space-y-2.5 relative">
-                <button onClick={() => removeVolunteer(idx)} className="absolute top-3 right-3 text-rose-300 hover:text-rose-100"><Trash2 size={15}/></button>
+                <button onClick={() => removeVolunteer(idx)} className="absolute top-3 right-3 text-rose-300 hover:text-rose-100 cursor-pointer"><Trash2 size={15} /></button>
                 <input type="text" lang="es-CO" spellCheck={true} placeholder="Organización / Fundación" value={vol.organization} onChange={(e) => updateVolunteer(idx, "organization", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded-lg text-white" />
                 <input type="text" lang="es-CO" spellCheck={true} placeholder="Rol / Actividad" value={vol.role} onChange={(e) => updateVolunteer(idx, "role", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded-lg text-white" />
                 <div className="grid grid-cols-2 gap-2">
                   <input type="text" lang="es-CO" spellCheck={false} placeholder="Inicio" value={vol.startDate} onChange={(e) => updateVolunteer(idx, "startDate", e.target.value)} className="p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded-lg text-white" />
                   <input type="text" lang="es-CO" spellCheck={false} placeholder="Fin" value={vol.endDate} onChange={(e) => updateVolunteer(idx, "endDate", e.target.value)} className="p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded-lg text-white" />
                 </div>
-                <textarea lang="es-CO" spellCheck={true} placeholder="Funciones o aportes realizados..." rows={3} value={vol.description} onChange={(e) => updateVolunteer(idx, "description", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded-lg text-white resize-y"></textarea>
+                <textarea lang="es-CO" spellCheck={true} placeholder="Funciones o aportes realizados (cada línea será un punto numerado)..." rows={3} value={vol.description} onChange={(e) => updateVolunteer(idx, "description", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded-lg text-white resize-y"></textarea>
               </div>
             ))}
             <div className="flex justify-end pt-1">
-              <button onClick={addVolunteer} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition">
-                <Plus size={13}/> Añadir Voluntariado
+              <button onClick={addVolunteer} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition cursor-pointer">
+                <Plus size={13} /> Añadir Voluntariado
               </button>
             </div>
           </div>
@@ -687,22 +1057,42 @@ export default function Home() {
         </div>
 
         {/* PANEL DERECHO: Vista Previa */}
-        <div className="lg:col-span-7 bg-blue-950/90 p-6 rounded-2xl flex flex-col items-center shadow-2xl border border-blue-900 overflow-auto max-h-[88vh] print:p-0 print:m-0 print:bg-white print:overflow-visible print:max-h-none print:w-full print:shadow-none print:border-none">
+        <div className="lg:col-span-7 bg-blue-950/90 p-5 lg:p-6 rounded-2xl flex flex-col items-center shadow-2xl border border-blue-900 overflow-auto max-h-[88vh] print:p-0 print:m-0 print:bg-white print:overflow-visible print:max-h-none print:w-full print:shadow-none print:border-none">
           
-          <div className="w-full flex justify-between items-center mb-4 print:hidden px-2 text-xs text-blue-200">
-            <span className="font-semibold tracking-wide uppercase">📄 Vista Previa</span>
-            <span className="bg-blue-900 px-3 py-1 rounded-full border border-blue-800">Optimizado para Chrome</span>
+          <div className="w-full max-w-[800px] flex flex-wrap justify-between items-center gap-2 mb-4 print:hidden px-1 text-xs text-blue-200">
+            <span className="font-semibold tracking-wide uppercase flex items-center gap-1.5">
+              <FileText size={14} className="text-amber-400" /> Vista Previa
+            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className={`px-3 py-1 rounded-full border text-[11px] font-semibold ${
+                  estimatedPages > 2
+                    ? "bg-amber-950/80 border-amber-400 text-amber-300"
+                    : "bg-blue-900 border-blue-800 text-blue-200"
+                }`}
+                title="Para prácticas profesionales se recomienda 1 a 2 páginas"
+              >
+                Extensión estimada: {estimatedPages} {estimatedPages === 1 ? "página" : "páginas"}
+              </span>
+              <span className="hidden sm:inline bg-blue-900 px-3 py-1 rounded-full border border-blue-800 text-[11px]">
+                Optimizado para Chrome
+              </span>
+            </div>
           </div>
 
-          {/* HOJA EN FORMATO TABLA NATIVA CON EL ID "resume-preview-sheet" */}
-          <table id="resume-preview-sheet" className="resume-sheet bg-white text-slate-800 w-full max-w-[800px] shadow-[0_0_40px_rgba(0,0,0,0.4)] rounded-xl border-collapse" style={{ fontSize: '12px' }}>
+          {/* HOJA EN FORMATO TABLA NATIVA */}
+          <table
+            ref={resumeTableRef}
+            id="resume-preview-sheet"
+            className="resume-sheet bg-white text-slate-800 w-full max-w-[800px] shadow-[0_0_40px_rgba(0,0,0,0.4)] rounded-xl border-collapse table-fixed"
+            style={{ fontSize: "12px" }}
+          >
             <tbody>
               {/* Encabezado y Contacto */}
               <tr>
                 <td className="p-[1.2cm] pb-0">
-                  {/* Encabezado Institucional con logos originales */}
                   <div className="border-b-2 border-blue-900 pb-4 mb-5 flex flex-row justify-between items-center bg-white">
-                    <div className="pr-4">
+                    <div className="pr-4 min-w-0">
                       <h1 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase tracking-tight break-words">
                         {formData.fullName || "Nombre del Estudiante"}
                       </h1>
@@ -720,19 +1110,19 @@ export default function Home() {
 
                   {/* Contacto centrado y Enlaces interactivos */}
                   <div className="flex flex-wrap justify-center items-center gap-4 text-[12px] text-slate-600 mb-5 pb-3 border-b border-slate-100 font-medium text-center">
-                    {formData.email && <span className="flex items-center gap-1"><Mail size={12} className="text-blue-900"/> {formData.email}</span>}
-                    {formData.phone && <span className="flex items-center gap-1"><Phone size={12} className="text-blue-900"/> {formData.phone}</span>}
-                    {formData.city && <span className="flex items-center gap-1"><MapPin size={12} className="text-blue-900"/> {formData.city}</span>}
+                    {formData.email && <span className="flex items-center gap-1 break-all"><Mail size={12} className="text-blue-900 flex-shrink-0" /> {formData.email}</span>}
+                    {formData.phone && <span className="flex items-center gap-1"><Phone size={12} className="text-blue-900 flex-shrink-0" /> {formData.phone}</span>}
+                    {formData.city && <span className="flex items-center gap-1"><MapPin size={12} className="text-blue-900 flex-shrink-0" /> {formData.city}</span>}
                     {formData.links.map((l, i) => (
                       l.url ? (
-                        <a 
-                          key={i} 
-                          href={l.url.startsWith('http://') || l.url.startsWith('https://') ? l.url : `https://${l.url}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
+                        <a
+                          key={i}
+                          href={l.url.startsWith("http://") || l.url.startsWith("https://") ? l.url : `https://${l.url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="flex items-center gap-1 text-blue-900 hover:underline font-semibold cursor-pointer"
                         >
-                          <LinkIcon size={12} className="text-blue-900"/> {l.label || "Enlace"}
+                          <LinkIcon size={12} className="text-blue-900 flex-shrink-0" /> {l.label || "Enlace"}
                         </a>
                       ) : null
                     ))}
@@ -745,55 +1135,60 @@ export default function Home() {
                 <td className="px-[1.2cm]">
                   
                   {/* Perfil Profesional (Sección 2) */}
-                  {(formData.profile || formData.softSkills || formData.toolsList.length > 0 || formData.languageList.length > 0) && (
+                  {(formData.profile || parsedSoftSkills.length > 0 || formData.toolsList.length > 0 || formData.languageList.length > 0) && (
                     <div className="mb-5 print-atomic-item">
                       <SectionHeading title="Perfil Profesional" />
 
-                      {formData.profile && <p className="text-[12px] text-slate-700 text-justify leading-relaxed mb-3">{formData.profile}</p>}
+                      {formData.profile && (
+                        <p className="text-[12px] text-slate-700 text-justify leading-relaxed mb-3 break-words">
+                          {formData.profile}
+                        </p>
+                      )}
                       
-                      <table className="w-full text-[12px] mt-2 border-separate border-spacing-2">
-                        <tbody>
-                          <tr>
-                            {formData.softSkills && (
-                              <td className="w-1/3 bg-slate-50 p-2.5 rounded border border-slate-100 align-top">
-                                <span className="font-bold text-slate-900 flex items-center gap-1.5 mb-1 text-blue-900">
-                                  <CheckCircle size={13}/> Habilidades:
-                                </span>
-                                <ul className="text-slate-700 space-y-0.5">
-                                  {formData.softSkills.split(",").map((s, i) => {
-                                    const trimmed = s.trim();
-                                    return trimmed ? <li key={i}>• {trimmed}</li> : null;
-                                  })}
-                                </ul>
-                              </td>
-                            )}
-                            {formData.toolsList.length > 0 && (
-                              <td className="w-1/3 bg-slate-50 p-2.5 rounded border border-slate-100 align-top">
-                                <span className="font-bold text-slate-900 flex items-center gap-1.5 mb-1 text-blue-900">
-                                  <Wrench size={13}/> Herramientas:
-                                </span>
-                                <ul className="text-slate-700 space-y-0.5">
-                                  {formData.toolsList.map((t, i) => (
-                                    <li key={i}>• {t.name} <span className="text-blue-900 font-semibold">({t.level})</span></li>
-                                  ))}
-                                </ul>
-                              </td>
-                            )}
-                            {formData.languageList.length > 0 && (
-                              <td className="w-1/3 bg-slate-50 p-2.5 rounded border border-slate-100 align-top">
-                                <span className="font-bold text-slate-900 flex items-center gap-1.5 mb-1 text-blue-900">
-                                  <Globe size={13}/> Idiomas:
-                                </span>
-                                <ul className="text-slate-700 space-y-0.5">
-                                  {formData.languageList.map((l, i) => (
-                                    <li key={i}>• {l.language} <span className="text-blue-900 font-semibold">({l.level})</span></li>
-                                  ))}
-                                </ul>
-                              </td>
-                            )}
-                          </tr>
-                        </tbody>
-                      </table>
+                      {(parsedSoftSkills.length > 0 || formData.toolsList.length > 0 || formData.languageList.length > 0) && (
+                        <table className="w-full text-[12px] mt-2 border-separate border-spacing-2">
+                          <tbody>
+                            <tr>
+                              {parsedSoftSkills.length > 0 && (
+                                <td className="w-1/3 bg-slate-50 p-2.5 rounded border border-slate-100 align-top break-words">
+                                  <span className="font-bold flex items-center gap-1.5 mb-1 text-blue-900">
+                                    <CheckCircle size={13} /> Habilidades:
+                                  </span>
+                                  <ul className="text-slate-700 space-y-0.5">
+                                    {parsedSoftSkills.map((skill, i) => (
+                                      <li key={i}>• {skill}</li>
+                                    ))}
+                                  </ul>
+                                </td>
+                              )}
+                              {formData.toolsList.length > 0 && (
+                                <td className="w-1/3 bg-slate-50 p-2.5 rounded border border-slate-100 align-top break-words">
+                                  <span className="font-bold flex items-center gap-1.5 mb-1 text-blue-900">
+                                    <Wrench size={13} /> Herramientas:
+                                  </span>
+                                  <ul className="text-slate-700 space-y-0.5">
+                                    {formData.toolsList.map((t, i) => (
+                                      <li key={i}>• {t.name} <span className="text-blue-900 font-semibold">({t.level})</span></li>
+                                    ))}
+                                  </ul>
+                                </td>
+                              )}
+                              {formData.languageList.length > 0 && (
+                                <td className="w-1/3 bg-slate-50 p-2.5 rounded border border-slate-100 align-top break-words">
+                                  <span className="font-bold flex items-center gap-1.5 mb-1 text-blue-900">
+                                    <Globe size={13} /> Idiomas:
+                                  </span>
+                                  <ul className="text-slate-700 space-y-0.5">
+                                    {formData.languageList.map((l, i) => (
+                                      <li key={i}>• {l.language} <span className="text-blue-900 font-semibold">({l.level})</span></li>
+                                    ))}
+                                  </ul>
+                                </td>
+                              )}
+                            </tr>
+                          </tbody>
+                        </table>
+                      )}
                     </div>
                   )}
 
@@ -803,15 +1198,15 @@ export default function Home() {
                       <SectionHeading title="Formación" />
                       
                       <div className="mb-3">
-                        <div className="print-keep-with-next" style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: '#334155', letterSpacing: '0.03em', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px', lineHeight: '14px' }}>
+                        <div className="print-keep-with-next" style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#334155", letterSpacing: "0.03em", borderBottom: "1px solid #cbd5e1", paddingBottom: "4px", marginBottom: "10px", lineHeight: "14px" }}>
                           Académica
                         </div>
                         {formData.education.map((edu, i) => (
-                          <div key={i} className="text-[12px] space-y-0.5 print-atomic-item mb-3 pb-2.5 border-b border-slate-100 last:border-b-0">
+                          <div key={i} className="text-[12px] space-y-0.5 print-atomic-item mb-3 pb-2.5 border-b border-slate-100 last:border-b-0 break-words">
                             <span className="font-black text-slate-900 uppercase block">
                               {edu.degree || "Título a obtener / Programa"} <span className="font-normal text-blue-900 normal-case">({edu.level})</span>
                             </span>
-                            <span className="text-blue-900 font-semibold block capitalize">{edu.institution || "Institución"}</span>
+                            <span className="text-blue-900 font-semibold block">{edu.institution || "Institución"}</span>
                             <span className="text-slate-500 block text-[11px]">
                               {edu.isCurrent ? `En curso — ${edu.year || "Semestre actual"}` : edu.year}
                             </span>
@@ -821,13 +1216,13 @@ export default function Home() {
 
                       {formData.complementaryEdu.length > 0 && (
                         <div className="pt-1">
-                          <div className="print-keep-with-next" style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: '#334155', letterSpacing: '0.03em', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px', lineHeight: '14px' }}>
+                          <div className="print-keep-with-next" style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#334155", letterSpacing: "0.03em", borderBottom: "1px solid #cbd5e1", paddingBottom: "4px", marginBottom: "10px", lineHeight: "14px" }}>
                             Complementaria
                           </div>
                           {formData.complementaryEdu.map((comp, i) => (
-                            <div key={i} className="text-[12px] space-y-0.5 print-atomic-item mb-3 pb-2.5 border-b border-slate-100 last:border-b-0">
+                            <div key={i} className="text-[12px] space-y-0.5 print-atomic-item mb-3 pb-2.5 border-b border-slate-100 last:border-b-0 break-words">
                               <span className="font-black text-slate-900 uppercase block">{comp.title || "Curso o Taller"}</span>
-                              <span className="text-blue-900 font-semibold block capitalize">{comp.institution || "Institución"}</span>
+                              <span className="text-blue-900 font-semibold block">{comp.institution || "Institución"}</span>
                               <span className="text-slate-500 block text-[11px]">{comp.year}</span>
                             </div>
                           ))}
@@ -843,24 +1238,24 @@ export default function Home() {
                       
                       {formData.experiences.length > 0 && (
                         <div className="mb-3">
-                          <div className="print-keep-with-next" style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: '#334155', letterSpacing: '0.03em', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px', lineHeight: '14px' }}>
+                          <div className="print-keep-with-next" style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#334155", letterSpacing: "0.03em", borderBottom: "1px solid #cbd5e1", paddingBottom: "4px", marginBottom: "10px", lineHeight: "14px" }}>
                             Laboral
                           </div>
                           {formData.experiences.map((exp, i) => (
-                            <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0">
+                            <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0 break-words">
                               <div>
                                 <span className="font-black text-slate-900 uppercase block">{exp.position || "Cargo"}</span>
-                                <span className="text-blue-900 font-semibold block capitalize">{exp.company || "Empresa"}</span>
+                                <span className="text-blue-900 font-semibold block">{exp.company || "Empresa"}</span>
                                 <span className="text-slate-500 block text-[11px]">{exp.startDate} {exp.endDate ? `- ${exp.endDate}` : ""}</span>
                               </div>
-                              <table className="w-full text-slate-700 leading-relaxed" style={{ borderCollapse: 'collapse', marginTop: '4px' }}>
+                              <table className="w-full text-slate-700 leading-relaxed" style={{ borderCollapse: "collapse", marginTop: "4px" }}>
                                 <tbody>
                                   {exp.description.split(/\n/).map((item, idx) => {
                                     const trimmed = item.trim();
                                     return trimmed ? (
                                       <tr key={idx} className="print-atomic-item">
-                                        <td style={{ width: '1cm', verticalAlign: 'top', fontWeight: 600, paddingBottom: '3px' }}>{idx + 1}.</td>
-                                        <td style={{ verticalAlign: 'top', paddingBottom: '3px', textAlign: 'justify' }}>{trimmed}</td>
+                                        <td style={{ width: "1cm", verticalAlign: "top", fontWeight: 600, paddingBottom: "3px" }}>{idx + 1}.</td>
+                                        <td className="break-words" style={{ verticalAlign: "top", paddingBottom: "3px", textAlign: "justify" }}>{trimmed}</td>
                                       </tr>
                                     ) : null;
                                   })}
@@ -873,16 +1268,16 @@ export default function Home() {
 
                       {formData.projects.length > 0 && (
                         <div className="pt-1">
-                          <div className="print-keep-with-next" style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: '#334155', letterSpacing: '0.03em', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', marginBottom: '10px', lineHeight: '14px' }}>
+                          <div className="print-keep-with-next" style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#334155", letterSpacing: "0.03em", borderBottom: "1px solid #cbd5e1", paddingBottom: "4px", marginBottom: "10px", lineHeight: "14px" }}>
                             Proyectos Académicos
                           </div>
                           {formData.projects.map((proj, i) => (
-                            <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0">
+                            <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0 break-words">
                               <div>
                                 <span className="font-black text-slate-900 uppercase block">
                                   {proj.name || "Proyecto"}
                                 </span>
-                                <span className="text-blue-900 font-semibold block capitalize">{proj.role || "Rol"}</span>
+                                <span className="text-blue-900 font-semibold block">{proj.role || "Rol"}</span>
                               </div>
 
                               {proj.description && (
@@ -890,7 +1285,7 @@ export default function Home() {
                                   {proj.description.split(/\n/).map((paragraph, pIdx) => {
                                     const trimmed = paragraph.trim();
                                     return trimmed ? (
-                                      <p key={pIdx} className="text-slate-700 leading-relaxed text-justify">
+                                      <p key={pIdx} className="text-slate-700 leading-relaxed text-justify break-words">
                                         {trimmed}
                                       </p>
                                     ) : null;
@@ -901,7 +1296,7 @@ export default function Home() {
                               {proj.linkUrl && (
                                 <div className="pt-0.5">
                                   <a
-                                    href={proj.linkUrl.startsWith('http://') || proj.linkUrl.startsWith('https://') ? proj.linkUrl : `https://${proj.linkUrl}`}
+                                    href={proj.linkUrl.startsWith("http://") || proj.linkUrl.startsWith("https://") ? proj.linkUrl : `https://${proj.linkUrl}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1 text-blue-900 hover:underline font-semibold text-[11px]"
@@ -924,20 +1319,20 @@ export default function Home() {
                       <SectionHeading title="Voluntariado" />
                       <div>
                         {formData.volunteers.map((vol, i) => (
-                          <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0">
+                          <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0 break-words">
                             <div>
                               <span className="font-black text-slate-900 uppercase block">{vol.role || "Rol"}</span>
-                              <span className="text-blue-900 font-semibold block capitalize">{vol.organization || "Organización"}</span>
+                              <span className="text-blue-900 font-semibold block">{vol.organization || "Organización"}</span>
                               <span className="text-slate-500 block text-[11px]">{vol.startDate} {vol.endDate ? `- ${vol.endDate}` : ""}</span>
                             </div>
-                            <table className="w-full text-slate-700 leading-relaxed" style={{ borderCollapse: 'collapse', marginTop: '4px' }}>
+                            <table className="w-full text-slate-700 leading-relaxed" style={{ borderCollapse: "collapse", marginTop: "4px" }}>
                               <tbody>
                                 {vol.description.split(/\n/).map((item, idx) => {
                                   const trimmed = item.trim();
                                   return trimmed ? (
                                     <tr key={idx} className="print-atomic-item">
-                                      <td style={{ width: '1cm', verticalAlign: 'top', fontWeight: 600, paddingBottom: '3px' }}>{idx + 1}.</td>
-                                      <td style={{ verticalAlign: 'top', paddingBottom: '3px', textAlign: 'justify' }}>{trimmed}</td>
+                                      <td style={{ width: "1cm", verticalAlign: "top", fontWeight: 600, paddingBottom: "3px" }}>{idx + 1}.</td>
+                                      <td className="break-words" style={{ verticalAlign: "top", paddingBottom: "3px", textAlign: "justify" }}>{trimmed}</td>
                                     </tr>
                                   ) : null;
                                 })}
@@ -957,13 +1352,13 @@ export default function Home() {
               <tr>
                 <td className="p-[1.2cm] pt-3">
                   {/* Pie de página institucional */}
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <tbody>
                       <tr>
-                        <td style={{ borderTop: '1px solid #cbd5e1', paddingTop: '8px', textAlign: 'center', fontSize: '10px', color: '#64748b', lineHeight: '1.4' }}>
+                        <td style={{ borderTop: "1px solid #cbd5e1", paddingTop: "8px", textAlign: "center", fontSize: "10px", color: "#64748b", lineHeight: "1.4" }}>
                           Línea de Atención al Usuario: 601 593 3004 · Línea Nacional: 01 8000 936 670<br />
-                          <strong style={{ color: '#334155' }}>www.uniminuto.edu</strong>
-                          <div style={{ width: '220px', margin: '4px auto 0 auto', padding: '2px 0', borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', fontWeight: 'bold', letterSpacing: '2px', color: '#475569', fontSize: '9px', textAlign: 'center' }}>
+                          <strong style={{ color: "#334155" }}>www.uniminuto.edu</strong>
+                          <div style={{ width: "220px", margin: "4px auto 0 auto", padding: "2px 0", borderTop: "1px solid #94a3b8", borderBottom: "1px solid #94a3b8", fontWeight: "bold", letterSpacing: "2px", color: "#475569", fontSize: "9px", textAlign: "center" }}>
                             VIGILADA MINEDUCACIÓN
                           </div>
                         </td>
