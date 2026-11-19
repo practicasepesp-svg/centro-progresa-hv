@@ -236,15 +236,25 @@ export default function Home() {
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
               <Code size={14} className="text-amber-400"/> Reconocimientos y Código Abierto
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-6 text-xs text-slate-300">
-              <span className="flex items-center gap-1.5 bg-blue-950/60 px-3 py-1.5 rounded-lg border border-blue-800">
-                <span className="font-bold text-white">OpenResume</span> (AGPL-3.0 License)
-              </span>
+            <div className="flex flex-wrap justify-center items-center gap-4 text-xs text-slate-300">
+              <a
+                href="https://github.com/xitanggg/open-resume"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 bg-blue-950/60 hover:bg-blue-900/80 px-3 py-1.5 rounded-lg border border-blue-800 hover:border-amber-400/60 transition"
+              >
+                <span>Basado en <strong className="text-white underline decoration-amber-400/60">OpenResume</strong> (AGPL-3.0)</span>
+              </a>
+              <a
+                href="https://github.com/practicasepesp-svg/centro-progresa-hv"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 bg-blue-950/60 hover:bg-blue-900/80 px-3 py-1.5 rounded-lg border border-blue-800 hover:border-amber-400/60 transition"
+              >
+                <span>Código fuente en <strong className="text-white underline decoration-amber-400/60">GitHub</strong></span>
+              </a>
               <span className="flex items-center gap-1.5 bg-blue-950/60 px-3 py-1.5 rounded-lg border border-blue-800">
                 Hosting en <strong className="text-white">Vercel</strong>
-              </span>
-              <span className="flex items-center gap-1.5 bg-blue-950/60 px-3 py-1.5 rounded-lg border border-blue-800">
-                Control en <strong className="text-white">GitHub</strong>
               </span>
               <span className="flex items-center gap-1.5 bg-blue-950/60 px-3 py-1.5 rounded-lg border border-blue-800">
                 Asistencia de <strong className="text-white">Gemini AI</strong>
