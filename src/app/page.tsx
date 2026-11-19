@@ -5,7 +5,7 @@ import {
   Printer, Briefcase, GraduationCap, Award, Phone, Mail, MapPin,
   Trash2, Plus, User, Languages, HeartHandshake, Link as LinkIcon,
   BookOpen, Wrench, CheckCircle, Globe, ShieldCheck, Code, ArrowRight,
-  Sparkles, RotateCcw, Download, Upload, FileText
+  Sparkles, RotateCcw, Download, Upload, FileText, Cpu, CalendarCheck, ArrowUpDown
 } from "lucide-react";
 
 interface LinkItem { label: string; url: string; }
@@ -19,14 +19,18 @@ interface Volunteer { organization: string; role: string; startDate: string; end
 
 interface ResumeFormData {
   fullName: string;
+  headline: string;
+  availability: string;
   email: string;
   phone: string;
   city: string;
   links: LinkItem[];
   profile: string;
+  technicalSkills: string;
   softSkills: string;
   toolsList: ToolItem[];
   languageList: LanguageItem[];
+  prioritizeExperience: boolean;
   education: Education[];
   complementaryEdu: ComplementaryEdu[];
   experiences: Experience[];
@@ -52,16 +56,30 @@ const UNIMINUTO_PROGRAMS: { name: string; level: string }[] = [
   { name: "Tecnología en Logística", level: "Tecnólogo" },
 ];
 
+const AVAILABILITY_OPTIONS: string[] = [
+  "",
+  "Disponible para Contrato de Aprendizaje (Tiempo Completo)",
+  "Disponible para Convenio de Prácticas (Tiempo Completo)",
+  "Disponible para Pasantía / Práctica Profesional",
+  "Modalidad Validación por Experiencia Laboral",
+  "Disponibilidad Inmediata - Tiempo Completo",
+  "Disponibilidad Medio Tiempo"
+];
+
 const INITIAL_FORM_DATA: ResumeFormData = {
   fullName: "",
+  headline: "",
+  availability: "",
   email: "",
   phone: "",
   city: "Bogotá D.C.",
   links: [],
   profile: "",
+  technicalSkills: "",
   softSkills: "",
   toolsList: [],
   languageList: [],
+  prioritizeExperience: false,
   education: [
     {
       institution: "Corporación Universitaria Minuto de Dios - UNIMINUTO",
@@ -80,6 +98,8 @@ const INITIAL_FORM_DATA: ResumeFormData = {
 
 const SAMPLE_FORM_DATA: ResumeFormData = {
   fullName: "Diana Prince",
+  headline: "Estudiante de Tecnología en Gestión de Mercadeo | Candidata a Práctica Profesional",
+  availability: "Disponible para Contrato de Aprendizaje (Tiempo Completo)",
   email: "ejemplo.estudiante@uniminuto.edu.co",
   phone: "300 000 0000",
   city: "Bogotá D.C.",
@@ -88,8 +108,9 @@ const SAMPLE_FORM_DATA: ResumeFormData = {
     { label: "Portafolio", url: "behance.net/ejemplo-portafolio" }
   ],
   profile:
-    "Estudiante de octavo semestre de Tecnología en Gestión de Mercadeo en UNIMINUTO Rectoría Bogotá, con experiencia previa de dos años en atención al cliente, apoyo comercial y gestión de contenidos digitales. Me caracterizo por mi orientación al logro, pensamiento analítico, trabajo colaborativo y capacidad de adaptación. Busco realizar mis prácticas profesionales aportando en investigación de mercados, estrategias de fidelización y análisis de campañas.",
-  softSkills: "Trabajo en equipo, Comunicación asertiva, Orientación al cliente, Organización, Pensamiento analítico",
+    "Estudiante de octavo semestre de Tecnología en Gestión de Mercadeo en UNIMINUTO Rectoría Bogotá, con dos años de experiencia en atención al cliente, apoyo comercial y gestión de contenidos digitales. Cuento con conocimientos en investigación de mercados, analítica web y estrategias de fidelización. Busco realizar mis prácticas profesionales aportando en el posicionamiento digital y análisis de campañas comerciales.",
+  technicalSkills: "Investigación de mercados, Marketing digital, Servicio al cliente, Gestión comercial, Análisis de indicadores (KPI)",
+  softSkills: "Trabajo en equipo, Comunicación asertiva, Orientación al logro, Pensamiento analítico",
   toolsList: [
     { name: "Microsoft Excel", level: "Avanzado" },
     { name: "Canva", level: "Avanzado" },
@@ -98,6 +119,7 @@ const SAMPLE_FORM_DATA: ResumeFormData = {
   languageList: [
     { language: "Inglés", level: "B1 - Intermedio" }
   ],
+  prioritizeExperience: false,
   education: [
     {
       institution: "Corporación Universitaria Minuto de Dios - UNIMINUTO",
@@ -134,15 +156,15 @@ const SAMPLE_FORM_DATA: ResumeFormData = {
       startDate: "Ene 2023",
       endDate: "Dic 2024",
       description:
-        "Gestionar la atención personalizada y telefónica de clientes, brindando asesoría oportuna sobre productos y servicios.\nApoyar el seguimiento de cotizaciones, facturación básica y actualización de bases de datos comerciales en Excel.\nColaborar en la organización de exhibiciones promocionales en punto de venta para el lanzamiento de nuevas líneas."
+        "Gestionar la atención personalizada y telefónica de más de 40 clientes diarios, logrando un índice de satisfacción superior al 92%.\nEstructurar bases de datos comerciales y seguimiento de cotizaciones en Microsoft Excel, reduciendo en un 20% los tiempos de respuesta.\nApoyar la ejecución de campañas promocionales en punto de venta para el lanzamiento de nuevas líneas de producto."
     }
   ],
   projects: [
     {
       name: "Plan Estratégico de Posicionamiento Digital para MiPymes Locales",
-      role: "Líder de Investigación de Mercados",
+      role: "Líder de Investigación de Mercados (Proyecto Integrador)",
       description:
-        "Diagnóstico de presencia digital y propuesta de plan de contenidos para emprendimientos locales en el marco de la asignatura de Investigación de Mercados.",
+        "Elaboración de diagnóstico digital y plan de contenidos para emprendimientos locales mediante encuestas estructuradas y análisis de competencia.",
       linkLabel: "Presentación",
       linkUrl: "behance.net/ejemplo-portafolio"
     }
@@ -154,12 +176,12 @@ const SAMPLE_FORM_DATA: ResumeFormData = {
       startDate: "Ago 2024",
       endDate: "Nov 2024",
       description:
-        "Apoyar la logística de jornadas de recolección y entrega de kits escolares para niños en situación de vulnerabilidad."
+        "Coordinar la logística de jornadas de recolección y entrega de kits escolares para niños en situación de vulnerabilidad."
     }
   ]
 };
 
-const STORAGE_KEY = "centro_progresa_hv_draft_v1";
+const STORAGE_KEY = "centro_progresa_hv_draft_v2";
 
 export default function Home() {
   const [started, setStarted] = useState(false);
@@ -178,7 +200,7 @@ export default function Home() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === "object" && Array.isArray(parsed.education)) {
-          setFormData(parsed);
+          setFormData({ ...INITIAL_FORM_DATA, ...parsed });
           const primaryDegree = parsed.education[0]?.degree || "";
           if (primaryDegree && !UNIMINUTO_PROGRAMS.some((p) => p.name === primaryDegree)) {
             setCustomProgramMode(true);
@@ -186,7 +208,7 @@ export default function Home() {
         }
       }
     } catch {
-      // Ignorar errores de lectura de almacenamiento
+      // Ignorar errores de lectura
     }
   }, []);
 
@@ -199,7 +221,7 @@ export default function Home() {
     }
   }, [formData]);
 
-  // Calcular extensión estimada en páginas Carta (aprox. 980px útiles por hoja)
+  // Calcular extensión estimada en páginas Carta
   useEffect(() => {
     if (!started) return;
     const timer = setTimeout(() => {
@@ -221,14 +243,12 @@ export default function Home() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Cargar ejemplo guía
   const handleLoadSample = () => {
     setFormData(SAMPLE_FORM_DATA);
     setCustomProgramMode(false);
     showToast("Ejemplo ilustrativo cargado. Puedes editarlo o limpiarlo cuando quieras.");
   };
 
-  // Limpiar formulario
   const handleResetForm = () => {
     setFormData(INITIAL_FORM_DATA);
     setCustomProgramMode(false);
@@ -240,7 +260,6 @@ export default function Home() {
     showToast("Formulario limpiado.");
   };
 
-  // Exportar respaldo local (.json)
   const handleExportJson = () => {
     const dataStr = JSON.stringify(formData, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
@@ -259,7 +278,6 @@ export default function Home() {
     showToast("Respaldo descargado en tu equipo.");
   };
 
-  // Importar respaldo local (.json)
   const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -288,7 +306,7 @@ export default function Home() {
     e.target.value = "";
   };
 
-  // Selección de programa principal UNIMINUTO
+  // Selección de programa principal UNIMINUTO + actualización inteligente del titular si está vacío o automático
   const handlePrimaryProgramSelect = (value: string) => {
     if (value === "__OTHER__") {
       setCustomProgramMode(true);
@@ -303,10 +321,17 @@ export default function Home() {
       degree: value,
       level: found ? found.level : newEdu[0].level
     };
-    setFormData({ ...formData, education: newEdu });
+    const isAutoHeadline =
+      !formData.headline ||
+      formData.headline.startsWith("Estudiante de ");
+    const nextHeadline = value && isAutoHeadline
+      ? `Estudiante de ${value} | Candidato a Práctica Profesional`
+      : formData.headline;
+
+    setFormData({ ...formData, education: newEdu, headline: nextHeadline });
   };
 
-  // Enlaces Profesionales (Sección 1)
+  // Enlaces Profesionales
   const addLink = () => {
     setFormData({ ...formData, links: [...formData.links, { label: "LinkedIn", url: "" }] });
   };
@@ -319,7 +344,7 @@ export default function Home() {
     setFormData({ ...formData, links: formData.links.filter((_, i) => i !== index) });
   };
 
-  // Herramientas (Sección 2)
+  // Herramientas
   const addTool = () => {
     setFormData({ ...formData, toolsList: [...formData.toolsList, { name: "", level: "Intermedio" }] });
   };
@@ -332,7 +357,7 @@ export default function Home() {
     setFormData({ ...formData, toolsList: formData.toolsList.filter((_, i) => i !== index) });
   };
 
-  // Idiomas (Sección 2)
+  // Idiomas
   const addLanguage = () => {
     setFormData({ ...formData, languageList: [...formData.languageList, { language: "", level: "B2 - Intermedio Alto" }] });
   };
@@ -425,11 +450,22 @@ export default function Home() {
     setFormData({ ...formData, volunteers: formData.volunteers.filter((_, i) => i !== index) });
   };
 
-  // Limpia espacios dobles y puntos finales innecesarios en habilidades cortas
-  const parsedSoftSkills = formData.softSkills
-    .split(",")
-    .map((s) => s.replace(/\s+/g, " ").replace(/\.+$/, "").trim())
-    .filter(Boolean);
+  // Limpieza automática de etiquetas cortas
+  const cleanTagList = (raw: string) =>
+    raw
+      .split(",")
+      .map((s) => s.replace(/\s+/g, " ").replace(/\.+$/, "").trim())
+      .filter(Boolean);
+
+  const parsedTechnicalSkills = cleanTagList(formData.technicalSkills);
+  const parsedSoftSkills = cleanTagList(formData.softSkills);
+
+  // Titular dinámico en cabecera
+  const computedHeadline =
+    formData.headline.trim() ||
+    (formData.education[0]?.degree
+      ? `Estudiante de ${formData.education[0].degree} | Candidato a Práctica Profesional`
+      : "Candidato a Práctica Profesional");
 
   // Componente auxiliar para títulos principales blindados contra huérfanos
   const SectionHeading = ({ title }: { title: string }) => (
@@ -455,11 +491,188 @@ export default function Home() {
     </div>
   );
 
+  // Bloque reutilizable de Formación para permitir ordenamiento dinámico
+  const renderEducationSection = () =>
+    formData.education.length > 0 ? (
+      <div className="mb-5 pt-2 border-t border-slate-100">
+        <SectionHeading title="Formación" />
+
+        <div className="mb-3">
+          <div
+            className="print-keep-with-next"
+            style={{
+              fontSize: "11px",
+              fontWeight: 800,
+              textTransform: "uppercase",
+              color: "#334155",
+              letterSpacing: "0.03em",
+              borderBottom: "1px solid #cbd5e1",
+              paddingBottom: "4px",
+              marginBottom: "10px",
+              lineHeight: "14px"
+            }}
+          >
+            Académica
+          </div>
+          {formData.education.map((edu, i) => (
+            <div key={i} className="text-[12px] space-y-0.5 print-atomic-item mb-3 pb-2.5 border-b border-slate-100 last:border-b-0 break-words">
+              <span className="font-black text-slate-900 uppercase block">
+                {edu.degree || "Título a obtener / Programa"}{" "}
+                <span className="font-normal text-blue-900 normal-case">({edu.level})</span>
+              </span>
+              <span className="text-blue-900 font-semibold block">{edu.institution || "Institución"}</span>
+              <span className="text-slate-500 block text-[11px]">
+                {edu.isCurrent ? `En curso — ${edu.year || "Semestre actual"}` : edu.year}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {formData.complementaryEdu.length > 0 && (
+          <div className="pt-1">
+            <div
+              className="print-keep-with-next"
+              style={{
+                fontSize: "11px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                color: "#334155",
+                letterSpacing: "0.03em",
+                borderBottom: "1px solid #cbd5e1",
+                paddingBottom: "4px",
+                marginBottom: "10px",
+                lineHeight: "14px"
+              }}
+            >
+              Complementaria
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {formData.complementaryEdu.map((comp, i) => (
+                <div key={i} className="text-[12px] space-y-0.5 print-atomic-item bg-slate-50 p-2.5 rounded border border-slate-100 break-words">
+                  <span className="font-black text-slate-900 uppercase block leading-snug">{comp.title || "Curso o Taller"}</span>
+                  <span className="text-blue-900 font-semibold block">{comp.institution || "Institución"}</span>
+                  <span className="text-slate-500 block text-[11px]">{comp.year}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    ) : null;
+
+  // Bloque reutilizable de Experiencia Profesional para permitir ordenamiento dinámico
+  const renderExperienceSection = () =>
+    formData.experiences.length > 0 || formData.projects.length > 0 ? (
+      <div className="mb-5 pt-2 border-t border-slate-100">
+        <SectionHeading title="Experiencia Profesional" />
+
+        {formData.experiences.length > 0 && (
+          <div className="mb-3">
+            <div
+              className="print-keep-with-next"
+              style={{
+                fontSize: "11px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                color: "#334155",
+                letterSpacing: "0.03em",
+                borderBottom: "1px solid #cbd5e1",
+                paddingBottom: "4px",
+                marginBottom: "10px",
+                lineHeight: "14px"
+              }}
+            >
+              Laboral
+            </div>
+            {formData.experiences.map((exp, i) => (
+              <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0 break-words">
+                <div>
+                  <span className="font-black text-slate-900 uppercase block">{exp.position || "Cargo"}</span>
+                  <span className="text-blue-900 font-semibold block">{exp.company || "Empresa"}</span>
+                  <span className="text-slate-500 block text-[11px]">
+                    {exp.startDate} {exp.endDate ? `- ${exp.endDate}` : ""}
+                  </span>
+                </div>
+                <table className="w-full text-slate-700 leading-relaxed" style={{ borderCollapse: "collapse", marginTop: "4px" }}>
+                  <tbody>
+                    {exp.description.split(/\n/).map((item, idx) => {
+                      const trimmed = item.trim();
+                      return trimmed ? (
+                        <tr key={idx} className="print-atomic-item">
+                          <td style={{ width: "1cm", verticalAlign: "top", fontWeight: 600, paddingBottom: "3px" }}>{idx + 1}.</td>
+                          <td className="break-words" style={{ verticalAlign: "top", paddingBottom: "3px", textAlign: "justify" }}>{trimmed}</td>
+                        </tr>
+                      ) : null;
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {formData.projects.length > 0 && (
+          <div className="pt-1">
+            <div
+              className="print-keep-with-next"
+              style={{
+                fontSize: "11px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                color: "#334155",
+                letterSpacing: "0.03em",
+                borderBottom: "1px solid #cbd5e1",
+                paddingBottom: "4px",
+                marginBottom: "10px",
+                lineHeight: "14px"
+              }}
+            >
+              Proyectos Académicos, Semilleros y Monitorías
+            </div>
+            {formData.projects.map((proj, i) => (
+              <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0 break-words">
+                <div>
+                  <span className="font-black text-slate-900 uppercase block">{proj.name || "Proyecto"}</span>
+                  <span className="text-blue-900 font-semibold block">{proj.role || "Rol"}</span>
+                </div>
+
+                {proj.description && (
+                  <div className="space-y-1.5">
+                    {proj.description.split(/\n/).map((paragraph, pIdx) => {
+                      const trimmed = paragraph.trim();
+                      return trimmed ? (
+                        <p key={pIdx} className="text-slate-700 leading-relaxed text-justify break-words">
+                          {trimmed}
+                        </p>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+
+                {proj.linkUrl && (
+                  <div className="pt-0.5">
+                    <a
+                      href={proj.linkUrl.startsWith("http://") || proj.linkUrl.startsWith("https://") ? proj.linkUrl : `https://${proj.linkUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-blue-900 hover:underline font-semibold text-[11px]"
+                    >
+                      <LinkIcon size={11} className="text-blue-900" />
+                      {proj.linkLabel || "Enlace"}
+                    </a>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    ) : null;
+
   // PANTALLA INICIAL / LANDING PAGE
   if (!started) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 flex flex-col text-slate-100">
-        {/* Cabecera institucional superior */}
         <header className="bg-blue-950/80 backdrop-blur-md text-white px-6 py-4 flex justify-between items-center border-b border-blue-800/60 shadow-xl">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
@@ -476,7 +689,6 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Contenido principal de bienvenida */}
         <main className="flex-1 max-w-5xl w-full mx-auto p-6 lg:p-12 flex flex-col justify-center space-y-8">
           <div className="text-center space-y-4">
             <h2 className="text-3xl lg:text-5xl font-black tracking-tight text-white leading-tight">
@@ -702,6 +914,23 @@ export default function Home() {
                 className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400 transition"
               />
             </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-blue-200 mb-1">
+                Titular Profesional <span className="text-blue-300 font-normal">(se actualiza con tu programa o puedes editarlo)</span>
+              </label>
+              <input
+                type="text"
+                name="headline"
+                lang="es-CO"
+                spellCheck={true}
+                placeholder="Ej. Estudiante de Ingeniería de Sistemas | Candidato a Práctica Profesional"
+                value={formData.headline}
+                onChange={handleInputChange}
+                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400 transition"
+              />
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-blue-200 mb-1">Correo Electrónico</label>
@@ -730,17 +959,36 @@ export default function Home() {
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-[11px] font-semibold text-blue-200 mb-1">Ciudad</label>
-              <input
-                type="text"
-                name="city"
-                lang="es-CO"
-                spellCheck={true}
-                value={formData.city}
-                onChange={handleInputChange}
-                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
-              />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-blue-200 mb-1">Ciudad</label>
+                <input
+                  type="text"
+                  name="city"
+                  lang="es-CO"
+                  spellCheck={true}
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-blue-200 mb-1">Modalidad / Disponibilidad</label>
+                <select
+                  name="availability"
+                  value={formData.availability}
+                  onChange={handleInputChange}
+                  className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
+                >
+                  <option value="">No especificar</option>
+                  {AVAILABILITY_OPTIONS.filter(Boolean).map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Enlaces / Portafolios */}
@@ -771,25 +1019,45 @@ export default function Home() {
                 <label className="text-[11px] font-semibold text-blue-200">Perfil Ocupacional</label>
                 <span className="text-[10px] text-blue-300">{formData.profile.length} caracteres</span>
               </div>
+              <p className="text-[10px] text-blue-300/90 mb-1.5 leading-relaxed">
+                💡 <strong>Estructura recomendada (4–5 líneas):</strong> Programa y semestre + conocimientos clave + experiencia o proyectos + qué valor aportarás en la práctica.
+              </p>
               <textarea
                 name="profile"
                 lang="es-CO"
                 spellCheck={true}
                 rows={4}
-                placeholder="Describe tu programa académico, fortalezas principales y el área en la que deseas aportar durante tus prácticas..."
+                placeholder="Estudiante de octavo semestre de... con conocimientos en... Busco realizar mis prácticas profesionales aportando en..."
                 value={formData.profile}
                 onChange={handleInputChange}
                 className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400 resize-y"
               ></textarea>
             </div>
+
             <div>
-              <label className="block text-[11px] font-semibold text-blue-200 mb-1">Habilidades (separadas por comas)</label>
+              <label className="block text-[11px] font-semibold text-blue-200 mb-1">
+                Conocimientos Técnicos / Áreas de Dominio <span className="text-amber-300 font-normal">(palabras clave de tu carrera)</span>
+              </label>
+              <input
+                type="text"
+                name="technicalSkills"
+                lang="es-CO"
+                spellCheck={true}
+                placeholder="Ej. NIIF, Liquidación de nómina, SG-SST, Investigación de mercados, SQL"
+                value={formData.technicalSkills}
+                onChange={handleInputChange}
+                className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-blue-200 mb-1">Competencias Blandas (separadas por comas)</label>
               <input
                 type="text"
                 name="softSkills"
                 lang="es-CO"
                 spellCheck={true}
-                placeholder="Ej. Trabajo en equipo, Adaptabilidad, Liderazgo"
+                placeholder="Ej. Trabajo en equipo, Comunicación asertiva, Orientación al logro"
                 value={formData.softSkills}
                 onChange={handleInputChange}
                 className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
@@ -801,7 +1069,7 @@ export default function Home() {
               <span className="text-[11px] font-bold text-blue-200 flex items-center gap-1"><Wrench size={13} /> Herramientas (Software / Apps)</span>
               {formData.toolsList.map((tool, idx) => (
                 <div key={idx} className="flex gap-2 items-center bg-blue-900/40 p-2.5 rounded-lg border border-blue-800">
-                  <input type="text" lang="es-CO" spellCheck={true} placeholder="Ej. Microsoft Excel, Canva" value={tool.name} onChange={(e) => updateTool(idx, "name", e.target.value)} className="flex-1 p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                  <input type="text" lang="es-CO" spellCheck={true} placeholder="Ej. Microsoft Excel, SAP, Canva" value={tool.name} onChange={(e) => updateTool(idx, "name", e.target.value)} className="flex-1 p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   <select value={tool.level} onChange={(e) => updateTool(idx, "level", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white">
                     <option value="Básico">Básico</option>
                     <option value="Intermedio">Intermedio</option>
@@ -845,10 +1113,19 @@ export default function Home() {
 
           {/* SECCIÓN 3: FORMACIÓN */}
           <div className="bg-blue-950/80 border border-blue-800 rounded-xl p-5 space-y-4 shadow-sm">
-            <div className="flex justify-between items-center border-b border-blue-900 pb-2">
+            <div className="flex flex-wrap justify-between items-center gap-2 border-b border-blue-900 pb-2">
               <h2 className="text-xs font-extrabold uppercase tracking-widest text-amber-400 flex items-center gap-2">
                 <GraduationCap size={15} /> 3. Formación
               </h2>
+              <label className="flex items-center gap-1.5 text-[10px] font-semibold text-blue-200 bg-blue-900/70 px-2.5 py-1 rounded-lg border border-blue-800 cursor-pointer" title="Activa esta opción si ya tienes experiencia laboral relevante en tu área y deseas mostrarla antes que tus estudios">
+                <input
+                  type="checkbox"
+                  checked={formData.prioritizeExperience}
+                  onChange={(e) => setFormData({ ...formData, prioritizeExperience: e.target.checked })}
+                  className="rounded bg-blue-950 border-blue-700"
+                />
+                <ArrowUpDown size={11} className="text-amber-400" /> Priorizar Experiencia arriba
+              </label>
             </div>
 
             {/* Académica */}
@@ -975,6 +1252,9 @@ export default function Home() {
             {/* Laboral */}
             <div className="space-y-3 pt-1">
               <span className="text-[11px] font-bold text-blue-200">Experiencia Laboral</span>
+              <p className="text-[10px] text-blue-300/90 leading-relaxed">
+                💡 <strong>Fórmula de impacto:</strong> Verbo de acción + actividad/herramienta + resultado medible (cada línea será un punto numerado).
+              </p>
               {formData.experiences.map((exp, idx) => (
                 <div key={idx} className="p-3 border border-blue-800 rounded-xl bg-blue-900/50 space-y-2 relative">
                   <button onClick={() => removeExperience(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100 cursor-pointer"><Trash2 size={14} /></button>
@@ -984,7 +1264,7 @@ export default function Home() {
                     <input type="text" lang="es-CO" spellCheck={false} placeholder="Inicio (Ej. Ene 2024)" value={exp.startDate} onChange={(e) => updateExperience(idx, "startDate", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                     <input type="text" lang="es-CO" spellCheck={false} placeholder="Fin (Ej. Actual)" value={exp.endDate} onChange={(e) => updateExperience(idx, "endDate", e.target.value)} className="p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   </div>
-                  <textarea lang="es-CO" spellCheck={true} placeholder="Funciones (cada línea será un punto numerado; inicia con verbos en infinitivo: Gestionar, Apoyar...)" rows={4} value={exp.description} onChange={(e) => updateExperience(idx, "description", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded text-white resize-y"></textarea>
+                  <textarea lang="es-CO" spellCheck={true} placeholder="Ej. Gestionar reportes mensuales en Excel reduciendo tiempos de entrega en un 15%..." rows={4} value={exp.description} onChange={(e) => updateExperience(idx, "description", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded text-white resize-y"></textarea>
                 </div>
               ))}
               <div className="flex justify-end pt-1">
@@ -994,14 +1274,17 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Proyectos */}
+            {/* Proyectos, Semilleros y Monitorías */}
             <div className="space-y-3 pt-3 border-t border-blue-900/60">
-              <span className="text-[11px] font-bold text-blue-200">Proyectos Académicos</span>
+              <span className="text-[11px] font-bold text-blue-200">Proyectos Académicos, Semilleros y Monitorías</span>
+              <p className="text-[10px] text-blue-300/90 leading-relaxed">
+                💡 Si aún no tienes experiencia laboral formal, incluye aquí proyectos de aula, semilleros de investigación o monitorías universitarias.
+              </p>
               {formData.projects.map((proj, idx) => (
                 <div key={idx} className="p-3 border border-blue-800 rounded-xl bg-blue-900/50 space-y-2 relative">
                   <button onClick={() => removeProject(idx)} className="absolute top-2.5 right-2.5 text-rose-300 hover:text-rose-100 cursor-pointer"><Trash2 size={14} /></button>
-                  <input type="text" lang="es-CO" spellCheck={true} placeholder="Nombre del Proyecto" value={proj.name} onChange={(e) => updateProject(idx, "name", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
-                  <input type="text" lang="es-CO" spellCheck={true} placeholder="Rol / Participación" value={proj.role} onChange={(e) => updateProject(idx, "role", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                  <input type="text" lang="es-CO" spellCheck={true} placeholder="Nombre del Proyecto, Semillero o Monitoría" value={proj.name} onChange={(e) => updateProject(idx, "name", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
+                  <input type="text" lang="es-CO" spellCheck={true} placeholder="Rol / Participación (Ej. Monitor Académico, Investigador)" value={proj.role} onChange={(e) => updateProject(idx, "role", e.target.value)} className="w-full p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white" />
                   <div className="flex gap-2 items-center bg-blue-950/60 p-2 rounded-lg border border-blue-800/80">
                     <input
                       type="text"
@@ -1022,12 +1305,12 @@ export default function Home() {
                       className="flex-1 p-2 text-[12px] bg-blue-950 border border-blue-800 rounded text-white"
                     />
                   </div>
-                  <textarea lang="es-CO" spellCheck={true} placeholder="Descripción del proyecto (usa Enter para separar párrafos)..." rows={4} value={proj.description} onChange={(e) => updateProject(idx, "description", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded text-white resize-y"></textarea>
+                  <textarea lang="es-CO" spellCheck={true} placeholder="Objetivo del proyecto, metodología aplicada y resultados obtenidos..." rows={4} value={proj.description} onChange={(e) => updateProject(idx, "description", e.target.value)} className="w-full p-2.5 text-[12px] bg-blue-950 border border-blue-800 rounded text-white resize-y"></textarea>
                 </div>
               ))}
               <div className="flex justify-end pt-1">
                 <button onClick={addProject} className="text-[11px] bg-amber-400 hover:bg-amber-300 text-blue-950 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow transition cursor-pointer">
-                  <Plus size={13} /> Añadir Proyecto
+                  <Plus size={13} /> Añadir Proyecto / Semillero
                 </button>
               </div>
             </div>
@@ -1096,13 +1379,13 @@ export default function Home() {
               {/* Encabezado y Contacto */}
               <tr>
                 <td className="p-[1.2cm] pb-0">
-                  <div className="border-b-2 border-blue-900 pb-4 mb-5 flex flex-row justify-between items-center bg-white">
+                  <div className="border-b-2 border-blue-900 pb-4 mb-4 flex flex-row justify-between items-center bg-white">
                     <div className="pr-4 min-w-0">
                       <h1 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase tracking-tight break-words">
                         {formData.fullName || "Nombre del Estudiante"}
                       </h1>
-                      <p className="text-blue-900 font-bold text-[11px] uppercase tracking-widest mt-1">
-                        Candidato a Práctica Profesional
+                      <p className="text-blue-900 font-bold text-[11px] uppercase tracking-wider mt-1 break-words">
+                        {computedHeadline}
                       </p>
                     </div>
                     
@@ -1114,10 +1397,15 @@ export default function Home() {
                   </div>
 
                   {/* Contacto centrado y Enlaces interactivos */}
-                  <div className="flex flex-wrap justify-center items-center gap-4 text-[12px] text-slate-600 mb-5 pb-3 border-b border-slate-100 font-medium text-center">
+                  <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1.5 text-[11.5px] text-slate-600 mb-4 pb-3 border-b border-slate-100 font-medium text-center">
                     {formData.email && <span className="flex items-center gap-1 break-all"><Mail size={12} className="text-blue-900 flex-shrink-0" /> {formData.email}</span>}
                     {formData.phone && <span className="flex items-center gap-1"><Phone size={12} className="text-blue-900 flex-shrink-0" /> {formData.phone}</span>}
                     {formData.city && <span className="flex items-center gap-1"><MapPin size={12} className="text-blue-900 flex-shrink-0" /> {formData.city}</span>}
+                    {formData.availability && (
+                      <span className="flex items-center gap-1 text-blue-950 font-semibold">
+                        <CalendarCheck size={12} className="text-blue-900 flex-shrink-0" /> {formData.availability}
+                      </span>
+                    )}
                     {formData.links.map((l, i) => (
                       l.url ? (
                         <a
@@ -1140,7 +1428,7 @@ export default function Home() {
                 <td className="px-[1.2cm]">
                   
                   {/* Perfil Profesional (Sección 2) */}
-                  {(formData.profile || parsedSoftSkills.length > 0 || formData.toolsList.length > 0 || formData.languageList.length > 0) && (
+                  {(formData.profile || parsedTechnicalSkills.length > 0 || parsedSoftSkills.length > 0 || formData.toolsList.length > 0 || formData.languageList.length > 0) && (
                     <div className="mb-5 print-atomic-item">
                       <SectionHeading title="Perfil Profesional" />
 
@@ -1149,15 +1437,26 @@ export default function Home() {
                           {formData.profile}
                         </p>
                       )}
+
+                      {parsedTechnicalSkills.length > 0 && (
+                        <div className="bg-slate-50 p-2.5 rounded border border-slate-100 mb-2 break-words text-[12px]">
+                          <span className="font-bold inline-flex items-center gap-1.5 text-blue-900 mr-1.5">
+                            <Cpu size={13} /> Conocimientos Técnicos:
+                          </span>
+                          <span className="text-slate-700">
+                            {parsedTechnicalSkills.join(" • ")}
+                          </span>
+                        </div>
+                      )}
                       
                       {(parsedSoftSkills.length > 0 || formData.toolsList.length > 0 || formData.languageList.length > 0) && (
-                        <table className="w-full text-[12px] mt-2 border-separate border-spacing-2">
+                        <table className="w-full text-[12px] mt-1 border-separate border-spacing-2">
                           <tbody>
                             <tr>
                               {parsedSoftSkills.length > 0 && (
                                 <td className="w-1/3 bg-slate-50 p-2.5 rounded border border-slate-100 align-top break-words">
                                   <span className="font-bold flex items-center gap-1.5 mb-1 text-blue-900">
-                                    <CheckCircle size={13} /> Habilidades:
+                                    <CheckCircle size={13} /> Competencias:
                                   </span>
                                   <ul className="text-slate-700 space-y-0.5">
                                     {parsedSoftSkills.map((skill, i) => (
@@ -1197,127 +1496,17 @@ export default function Home() {
                     </div>
                   )}
 
-                  {/* Formación (Sección 3) */}
-                  {formData.education.length > 0 && (
-                    <div className="mb-5 pt-2 border-t border-slate-100">
-                      <SectionHeading title="Formación" />
-                      
-                      <div className="mb-3">
-                        <div className="print-keep-with-next" style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#334155", letterSpacing: "0.03em", borderBottom: "1px solid #cbd5e1", paddingBottom: "4px", marginBottom: "10px", lineHeight: "14px" }}>
-                          Académica
-                        </div>
-                        {formData.education.map((edu, i) => (
-                          <div key={i} className="text-[12px] space-y-0.5 print-atomic-item mb-3 pb-2.5 border-b border-slate-100 last:border-b-0 break-words">
-                            <span className="font-black text-slate-900 uppercase block">
-                              {edu.degree || "Título a obtener / Programa"} <span className="font-normal text-blue-900 normal-case">({edu.level})</span>
-                            </span>
-                            <span className="text-blue-900 font-semibold block">{edu.institution || "Institución"}</span>
-                            <span className="text-slate-500 block text-[11px]">
-                              {edu.isCurrent ? `En curso — ${edu.year || "Semestre actual"}` : edu.year}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {formData.complementaryEdu.length > 0 && (
-                        <div className="pt-1">
-                          <div className="print-keep-with-next" style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#334155", letterSpacing: "0.03em", borderBottom: "1px solid #cbd5e1", paddingBottom: "4px", marginBottom: "10px", lineHeight: "14px" }}>
-                            Complementaria
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            {formData.complementaryEdu.map((comp, i) => (
-                              <div key={i} className="text-[12px] space-y-0.5 print-atomic-item bg-slate-50 p-2.5 rounded border border-slate-100 break-words">
-                                <span className="font-black text-slate-900 uppercase block leading-snug">{comp.title || "Curso o Taller"}</span>
-                                <span className="text-blue-900 font-semibold block">{comp.institution || "Institución"}</span>
-                                <span className="text-slate-500 block text-[11px]">{comp.year}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Experiencia Profesional (Sección 4) */}
-                  {(formData.experiences.length > 0 || formData.projects.length > 0) && (
-                    <div className="mb-5 pt-2 border-t border-slate-100">
-                      <SectionHeading title="Experiencia Profesional" />
-                      
-                      {formData.experiences.length > 0 && (
-                        <div className="mb-3">
-                          <div className="print-keep-with-next" style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#334155", letterSpacing: "0.03em", borderBottom: "1px solid #cbd5e1", paddingBottom: "4px", marginBottom: "10px", lineHeight: "14px" }}>
-                            Laboral
-                          </div>
-                          {formData.experiences.map((exp, i) => (
-                            <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0 break-words">
-                              <div>
-                                <span className="font-black text-slate-900 uppercase block">{exp.position || "Cargo"}</span>
-                                <span className="text-blue-900 font-semibold block">{exp.company || "Empresa"}</span>
-                                <span className="text-slate-500 block text-[11px]">{exp.startDate} {exp.endDate ? `- ${exp.endDate}` : ""}</span>
-                              </div>
-                              <table className="w-full text-slate-700 leading-relaxed" style={{ borderCollapse: "collapse", marginTop: "4px" }}>
-                                <tbody>
-                                  {exp.description.split(/\n/).map((item, idx) => {
-                                    const trimmed = item.trim();
-                                    return trimmed ? (
-                                      <tr key={idx} className="print-atomic-item">
-                                        <td style={{ width: "1cm", verticalAlign: "top", fontWeight: 600, paddingBottom: "3px" }}>{idx + 1}.</td>
-                                        <td className="break-words" style={{ verticalAlign: "top", paddingBottom: "3px", textAlign: "justify" }}>{trimmed}</td>
-                                      </tr>
-                                    ) : null;
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {formData.projects.length > 0 && (
-                        <div className="pt-1">
-                          <div className="print-keep-with-next" style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#334155", letterSpacing: "0.03em", borderBottom: "1px solid #cbd5e1", paddingBottom: "4px", marginBottom: "10px", lineHeight: "14px" }}>
-                            Proyectos Académicos
-                          </div>
-                          {formData.projects.map((proj, i) => (
-                            <div key={i} className="text-[12px] space-y-1.5 print-atomic-item mb-3.5 pb-3 border-b border-slate-100 last:border-b-0 break-words">
-                              <div>
-                                <span className="font-black text-slate-900 uppercase block">
-                                  {proj.name || "Proyecto"}
-                                </span>
-                                <span className="text-blue-900 font-semibold block">{proj.role || "Rol"}</span>
-                              </div>
-
-                              {proj.description && (
-                                <div className="space-y-1.5">
-                                  {proj.description.split(/\n/).map((paragraph, pIdx) => {
-                                    const trimmed = paragraph.trim();
-                                    return trimmed ? (
-                                      <p key={pIdx} className="text-slate-700 leading-relaxed text-justify break-words">
-                                        {trimmed}
-                                      </p>
-                                    ) : null;
-                                  })}
-                                </div>
-                              )}
-
-                              {proj.linkUrl && (
-                                <div className="pt-0.5">
-                                  <a
-                                    href={proj.linkUrl.startsWith("http://") || proj.linkUrl.startsWith("https://") ? proj.linkUrl : `https://${proj.linkUrl}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 text-blue-900 hover:underline font-semibold text-[11px]"
-                                  >
-                                    <LinkIcon size={11} className="text-blue-900" />
-                                    {proj.linkLabel || "Enlace"}
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  {/* Orden dinámico: Formación primero o Experiencia primero */}
+                  {formData.prioritizeExperience ? (
+                    <>
+                      {renderExperienceSection()}
+                      {renderEducationSection()}
+                    </>
+                  ) : (
+                    <>
+                      {renderEducationSection()}
+                      {renderExperienceSection()}
+                    </>
                   )}
 
                   {/* Voluntariado (Sección 5) */}
