@@ -1,6 +1,6 @@
 # Creador de Hoja de Vida Institucional — Centro Progresa E.P.E.
 
-Plataforma web diseñada especialmente para estudiantes de pregrado de **UNIMINUTO Rectoría Bogotá**, desarrollada para facilitar la creación, previsualización en tiempo real y exportación a PDF de hojas de vida estandarizadas para postulación a **prácticas profesionales**.
+Plataforma web diseñada especialmente para estudiantes de pregrado de **UNIMINUTO Rectoría Bogotá**, desarrollada para facilitar la creación, previsualización en tiempo real y exportación a PDF de hojas de vida estandarizadas y optimizadas para procesos de selección de **prácticas profesionales**.
 
 🌐 **Aplicación en vivo:** [centro-progresa-hv.vercel.app](https://centro-progresa-hv.vercel.app/)
 
@@ -8,11 +8,11 @@ Plataforma web diseñada especialmente para estudiantes de pregrado de **UNIMINU
 
 ## Características Principales
 
-- **Formulario estructurado en 5 secciones:**
-  1. **Información Personal:** Datos de contacto básicos y enlaces clicables a portafolios o redes profesionales (LinkedIn, GitHub, Behance, etc.).
-  2. **Perfil Profesional:** Perfil ocupacional con contador de caracteres, limpieza automática de habilidades blandas, dominio de herramientas/software e idiomas (marco MCER).
-  3. **Formación:** Catálogo integrado de programas de pregrado de UNIMINUTO Rectoría Bogotá (con asignación automática del nivel académico y opción de ingreso manual), estudios previos y formación complementaria presentada en cuadrícula de dos columnas.
-  4. **Experiencia Profesional:** Experiencia laboral con funciones detalladas y proyectos académicos con enlaces de demostración.
+- **Formulario estructurado en 5 secciones orientadas a empleabilidad:**
+  1. **Información Personal:** Datos de contacto, titular profesional dinámico (autocompletado según el programa o editable), modalidad de vinculación y disponibilidad (Contrato de Aprendizaje, Convenio de Prácticas, Pasantía, Validación laboral) y enlaces clicables a portafolios o redes profesionales (LinkedIn, GitHub, Behance, etc.).
+  2. **Perfil Profesional:** Perfil ocupacional con contador de caracteres y guía de redacción, bloque de conocimientos técnicos / áreas de dominio (optimizado para filtros ATS y lectura de reclutadores), competencias blandas, herramientas/software e idiomas (marco MCER).
+  3. **Formación:** Catálogo integrado de programas de pregrado de UNIMINUTO Rectoría Bogotá (con asignación automática del nivel académico y opción de ingreso manual), estudios previos, formación complementaria en cuadrícula de dos columnas e interruptor para priorizar la experiencia laboral sobre la formación cuando el perfil lo amerite.
+  4. **Experiencia Profesional:** Experiencia laboral con guía de redacción orientada a logros (verbo de acción + actividad + resultado) y sección de proyectos académicos, semilleros de investigación y monitorías con enlaces de demostración.
   5. **Voluntariado:** Participación en organizaciones sociales, fundaciones o actividades comunitarias.
 - **Vista previa en tiempo real e indicador de extensión:** Visualización instantánea bajo la línea gráfica institucional de UNIMINUTO con cálculo estimado de páginas (recomendado de 1 a 2 hojas).
 - **Respaldo portátil local (`.json`) y guía interactiva:**
