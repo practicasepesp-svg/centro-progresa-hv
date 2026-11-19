@@ -79,13 +79,13 @@ const INITIAL_FORM_DATA: ResumeFormData = {
 };
 
 const SAMPLE_FORM_DATA: ResumeFormData = {
-  fullName: "Laura Sofía Martínez Gómez",
-  email: "laura.martinez.go@uniminuto.edu.co",
-  phone: "310 456 7890",
+  fullName: "Diana Prince",
+  email: "ejemplo.estudiante@uniminuto.edu.co",
+  phone: "300 000 0000",
   city: "Bogotá D.C.",
   links: [
-    { label: "LinkedIn", url: "linkedin.com/in/laura-martinez-uniminuto" },
-    { label: "Portafolio", url: "behance.net/lauramartinez" }
+    { label: "LinkedIn", url: "linkedin.com/in/ejemplo-estudiante" },
+    { label: "Portafolio", url: "behance.net/ejemplo-portafolio" }
   ],
   profile:
     "Estudiante de octavo semestre de Tecnología en Gestión de Mercadeo en UNIMINUTO Rectoría Bogotá, con experiencia previa de dos años en atención al cliente, apoyo comercial y gestión de contenidos digitales. Me caracterizo por mi orientación al logro, pensamiento analítico, trabajo colaborativo y capacidad de adaptación. Busco realizar mis prácticas profesionales aportando en investigación de mercados, estrategias de fidelización y análisis de campañas.",
@@ -120,16 +120,21 @@ const SAMPLE_FORM_DATA: ResumeFormData = {
       title: "Curso de Marketing Digital y Analítica Web",
       institution: "UNIMINUTO - Educación Continua",
       year: "2025"
+    },
+    {
+      title: "Taller de Excel Aplicado a la Gestión Comercial",
+      institution: "Plataforma de Formación Virtual",
+      year: "2024"
     }
   ],
   experiences: [
     {
-      company: "Comercializadora Andina S.A.S.",
+      company: "Empresa Ejemplo S.A.S.",
       position: "Asesora Comercial y Servicio al Cliente",
       startDate: "Ene 2023",
       endDate: "Dic 2024",
       description:
-        "Gestionar la atención personalizada y telefónica de más de 40 clientes diarios, logrando un índice de satisfacción superior al 92%.\nApoyar el seguimiento de cotizaciones, facturación básica y actualización de bases de datos comerciales en Excel.\nColaborar en la organización de exhibiciones promocionales en punto de venta para el lanzamiento de nuevas líneas."
+        "Gestionar la atención personalizada y telefónica de clientes, brindando asesoría oportuna sobre productos y servicios.\nApoyar el seguimiento de cotizaciones, facturación básica y actualización de bases de datos comerciales en Excel.\nColaborar en la organización de exhibiciones promocionales en punto de venta para el lanzamiento de nuevas líneas."
     }
   ],
   projects: [
@@ -137,9 +142,9 @@ const SAMPLE_FORM_DATA: ResumeFormData = {
       name: "Plan Estratégico de Posicionamiento Digital para MiPymes Locales",
       role: "Líder de Investigación de Mercados",
       description:
-        "Diagnóstico de presencia digital y propuesta de plan de contenidos para emprendimientos de la localidad de Engativá en el marco de la asignatura de Investigación de Mercados.",
+        "Diagnóstico de presencia digital y propuesta de plan de contenidos para emprendimientos locales en el marco de la asignatura de Investigación de Mercados.",
       linkLabel: "Presentación",
-      linkUrl: "behance.net/lauramartinez"
+      linkUrl: "behance.net/ejemplo-portafolio"
     }
   ],
   volunteers: [
@@ -220,7 +225,7 @@ export default function Home() {
   const handleLoadSample = () => {
     setFormData(SAMPLE_FORM_DATA);
     setCustomProgramMode(false);
-    showToast("Ejemplo institucional cargado. Puedes editarlo o limpiarlo cuando quieras.");
+    showToast("Ejemplo ilustrativo cargado. Puedes editarlo o limpiarlo cuando quieras.");
   };
 
   // Limpiar formulario
@@ -489,7 +494,7 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-bold text-white">1. ¿Cómo funciona?</h3>
               <p className="text-slate-300 text-xs leading-relaxed">
-                Es muy sencillo. Solo debes completar el formulario con tu información personal, formación académica institucional, perfil y experiencia. Podrás ver una <strong>vista previa en tiempo real</strong>, descargar un respaldo editable en tu computador y guardar tu hoja de vida en PDF desde tu navegador.
+                Es muy sencillo. Solo debes completar el formulario con tu información personal, formación académica institucional, perfil y experiencia mientras observas una <strong>vista previa en tiempo real</strong>. Además, puedes usar el botón <strong>Guardar Avance</strong> para descargar un archivo de respaldo en tu computador y utilizar <strong>Cargar Avance</strong> en cualquier momento si deseas retomarlo o actualizarlo más adelante, antes de exportarlo a PDF desde tu navegador.
               </p>
             </div>
 
@@ -596,7 +601,7 @@ export default function Home() {
       )}
 
       {/* Barra superior institucional */}
-      <header className="bg-blue-900 text-white px-4 lg:px-6 py-3.5 print:hidden flex flex-wrap justify-between items-center gap-3 border-b border-blue-800 shadow-xl">
+      <header className="bg-blue-900 text-white px-4 lg:px-6 py-3.5 print:hidden flex flex-wrap items-center gap-3 border-b border-blue-800 shadow-xl">
         <div className="flex items-center gap-3 lg:gap-4">
           <button
             onClick={() => setStarted(false)}
@@ -619,7 +624,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -691,7 +696,7 @@ export default function Home() {
                 name="fullName"
                 lang="es-CO"
                 spellCheck={true}
-                placeholder="Ej. Laura Sofía Martínez Gómez"
+                placeholder="Ej. Diana Prince"
                 value={formData.fullName}
                 onChange={handleInputChange}
                 className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400 transition"
@@ -705,7 +710,7 @@ export default function Home() {
                   name="email"
                   lang="es-CO"
                   spellCheck={false}
-                  placeholder="correo@uniminuto.edu.co"
+                  placeholder="ejemplo.estudiante@uniminuto.edu.co"
                   value={formData.email}
                   onChange={handleInputChange}
                   className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
@@ -718,7 +723,7 @@ export default function Home() {
                   name="phone"
                   lang="es-CO"
                   spellCheck={false}
-                  placeholder="300 123 4567"
+                  placeholder="300 000 0000"
                   value={formData.phone}
                   onChange={handleInputChange}
                   className="w-full p-3 text-[12px] bg-blue-900 border border-blue-700 rounded-xl text-white outline-none focus:border-amber-400"
@@ -1219,13 +1224,15 @@ export default function Home() {
                           <div className="print-keep-with-next" style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", color: "#334155", letterSpacing: "0.03em", borderBottom: "1px solid #cbd5e1", paddingBottom: "4px", marginBottom: "10px", lineHeight: "14px" }}>
                             Complementaria
                           </div>
-                          {formData.complementaryEdu.map((comp, i) => (
-                            <div key={i} className="text-[12px] space-y-0.5 print-atomic-item mb-3 pb-2.5 border-b border-slate-100 last:border-b-0 break-words">
-                              <span className="font-black text-slate-900 uppercase block">{comp.title || "Curso o Taller"}</span>
-                              <span className="text-blue-900 font-semibold block">{comp.institution || "Institución"}</span>
-                              <span className="text-slate-500 block text-[11px]">{comp.year}</span>
-                            </div>
-                          ))}
+                          <div className="grid grid-cols-2 gap-3">
+                            {formData.complementaryEdu.map((comp, i) => (
+                              <div key={i} className="text-[12px] space-y-0.5 print-atomic-item bg-slate-50 p-2.5 rounded border border-slate-100 break-words">
+                                <span className="font-black text-slate-900 uppercase block leading-snug">{comp.title || "Curso o Taller"}</span>
+                                <span className="text-blue-900 font-semibold block">{comp.institution || "Institución"}</span>
+                                <span className="text-slate-500 block text-[11px]">{comp.year}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
